@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medzyme - AI-Powered Telemedicine</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        
+        :root {
+    --primary: #4F46E5;
+    --primary-dark: #4338CA;
+    --secondary: #818CF8;
+    --success: #34D399;
+    --warning: #FBBF24;
+    --danger: #EF4444;
+    --background: #F3F4F6;
+    --card: #FFFFFF;
+    --text: #1F2937;
+    --text-light: #6B7280;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+body {
+    background-color: var(--background);
+    color: var(--text);
+    min-height: 100vh;
+    padding-bottom: 70px;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.header {
+    background-color: var(--card);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.nav-bar {
+    background: var(--card);
+    box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
+    padding: 1rem;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.nav-bar a {
+    color: var(--text);
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 0.875rem;
+    transition: color 0.2s;
+}
+
+.nav-bar a:hover {
+    color: var(--primary);
+}
+
+.nav-bar a i {
+    font-size: 1.5rem;
+    margin-bottom: 0.25rem;
+}
+
+.card {
+    background: var(--card);
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.375rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+    outline: none;
+}
+
+.btn-primary {
+    background-color: var(--primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-dark);
+}
+
+.input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #E5E7EB;
+    border-radius: 0.375rem;
+    margin-bottom: 1rem;
+    font-size: 1rem;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    margin: 1rem 0;
+}
+        .hero {
+            text-align: center;
+            padding: 4rem 0;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            margin-bottom: 2rem;
+            border-radius: 0.5rem;
+        }
+
+        .hero h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-card {
+            text-align: center;
+            padding: 2rem;
+            transition: transform 0.2s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .feature-card i {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 1.5rem;
+        }
+
+        .stat-card .number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <h1>Medzyme</h1>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="hero">
+            <h1>AI-Powered Healthcare at Your Fingertips</h1>
+            <p>Get instant medical assistance, track your health, and connect with healthcare professionals</p>
+            <button class="btn btn-primary" onclick="location.href='login.html'">Get Started</button>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card card">
+                <div class="number">10k+</div>
+                <div>Active Users</div>
+            </div>
+            <div class="stat-card card">
+                <div class="number">98%</div>
+                <div>Satisfaction Rate</div>
+            </div>
+            <div class="stat-card card">
+                <div class="number">24/7</div>
+                <div>Support</div>
+            </div>
+            <div class="stat-card card">
+                <div class="number">5k+</div>
+                <div>AI Diagnoses</div>
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="feature-card card" onclick="location.href='diagnosis.html'">
+                <i class="fas fa-stethoscope"></i>
+                <h3>AI Diagnosis</h3>
+                <p>Get instant AI-powered preliminary diagnosis based on your symptoms</p>
+            </div>
+            <div class="feature-card card" onclick="location.href='telemedicine.html'">
+                <i class="fas fa-video"></i>
+                <h3>Virtual Consultations</h3>
+                <p>Connect with healthcare professionals through secure video calls</p>
+            </div>
+            <div class="feature-card card" onclick="location.href='medicine_tracker.html'">
+                <i class="fas fa-pills"></i>
+                <h3>Medicine Tracker</h3>
+                <p>Never miss a dose with smart reminders and scheduling</p>
+            </div>
+            <div class="feature-card card" onclick="location.href='health_records.html'">
+                <i class="fas fa-file-medical"></i>
+                <h3>Health Records</h3>
+                <p>Securely store and access your medical history anytime</p>
+            </div>
+        </div>
+    </div>
+
+    <nav class="nav-bar">
+        <a href="home.html"><i class="fas fa-home"></i>Home</a>
+        <a href="diagnosis.html"><i class="fas fa-stethoscope"></i>Diagnosis</a>
+        <a href="telemedicine.html"><i class="fas fa-video"></i>Consult</a>
+        <a href="medicine_tracker.html"><i class="fas fa-pills"></i>Medicine</a>
+        <a href="profile.html"><i class="fas fa-user"></i>Profile</a>
+    </nav>
+</body>
+</html>

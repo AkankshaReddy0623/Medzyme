@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medzyme - Medicine Tracker</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+    --primary: #4F46E5;
+    --primary-dark: #4338CA;
+    --secondary: #818CF8;
+    --success: #34D399;
+    --warning: #FBBF24;
+    --danger: #EF4444;
+    --background: #F3F4F6;
+    --card: #FFFFFF;
+    --text: #1F2937;
+    --text-light: #6B7280;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+body {
+    background-color: var(--background);
+    color: var(--text);
+    min-height: 100vh;
+    padding-bottom: 70px;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.header {
+    background-color: var(--card);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.nav-bar {
+    background: var(--card);
+    box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
+    padding: 1rem;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.nav-bar a {
+    color: var(--text);
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 0.875rem;
+    transition: color 0.2s;
+}
+
+.nav-bar a:hover {
+    color: var(--primary);
+}
+
+.nav-bar a i {
+    font-size: 1.5rem;
+    margin-bottom: 0.25rem;
+}
+
+.card {
+    background: var(--card);
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.375rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+    outline: none;
+}
+
+.btn-primary {
+    background-color: var(--primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-dark);
+}
+
+.input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #E5E7EB;
+    border-radius: 0.375rem;
+    margin-bottom: 1rem;
+    font-size: 1rem;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    margin: 1rem 0;
+}
+
+        .medicine-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .medicine-card {
+            position: relative;
+            transition: transform 0.2s;
+        }
+
+        .medicine-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .medicine-status {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .status-due {
+            background-color: var(--warning);
+            animation: pulse 2s infinite;
+        }
+
+        .status-taken {
+            background-color: var(--success);
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.5); opacity: 0.5; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .medicine-details {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .medicine-icon {
+            width: 48px;
+            height: 48px;
+            background-color: var(--primary);
+            color: white;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .schedule-timeline {
+            display: flex;
+            justify-content: space-between;
+            margin: 1.5rem 0;
+            position: relative;
+        }
+
+        .schedule-timeline::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background-color: #E5E7EB;
+            z-index: 0;
+        }
+
+        .timeline-point {
+            width: 40px;
+            height: 40px;
+            background-color: white;
+            border: 2px solid var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 1;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .timeline-point.active {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .timeline-point:hover {
+            transform: scale(1.1);
+        }
+
+        .add-medicine-form {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 2rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .form-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+
+        .progress-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: conic-gradient(var(--primary) 270deg, #E5E7EB 0deg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+        }
+
+        .progress-circle::before {
+            content: '75%';
+            width: 100px;
+            height: 100px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <h1>Medicine Tracker</h1>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h2>Today's Schedule</h2>
+                <button class="btn btn-primary" onclick="showAddMedicineForm()">
+                    <i class="fas fa-plus"></i> Add Medicine
+                </button>
+            </div>
+
+            <div class="schedule-timeline">
+                <div class="timeline-point active" title="8:00 AM">
+                    <i class="fas fa-check"></i>
+                </div>
+                <div class="timeline-point active" title="12:00 PM">
+                    <i class="fas fa-check"></i>
+                </div>
+                <div class="timeline-point" title="4:00 PM">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="timeline-point" title="8:00 PM">
+                    <i class="fas fa-clock"></i>
+                </div>
+            </div>
+
+            <div class="medicine-grid">
+                <div class="medicine-card card">
+                    <div class="medicine-status status-taken"></div>
+                    <div class="medicine-details">
+                        <div class="medicine-icon">
+                            <i class="fas fa-pills"></i>
+                        </div>
+                        <div>
+                            <h3>Amoxicillin</h3>
+                            <p>500mg tablet</p>
+                        </div>
+                    </div>
+                    <p><i class="fas fa-clock"></i> 8:00 AM, 8:00 PM</p>
+                    <p><i class="fas fa-calendar"></i> 5 days remaining</p>
+                    <button class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Mark as Taken</button>
+                </div>
+
+                <div class="medicine-card card">
+                    <div class="medicine-status status-due"></div>
+                    <div class="medicine-details">
+                        <div class="medicine-icon">
+                            <i class="fas fa-capsules"></i>
+                        </div>
+                        <div>
+                            <h3>Vitamin D3</h3>
+                            <p>1000 IU capsule</p>
+                        </div>
+                    </div>
+                    <p><i class="fas fa-clock"></i> 12:00 PM</p>
+                    <p><i class="fas fa-infinity"></i> Ongoing</p>
+                    <button class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Mark as Taken</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" style="margin-top: 2rem;">
+            <h2>Adherence Stats</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; margin-top: 1rem;">
+                <div style="text-align: center;">
+                    <div class="progress-circle"></div>
+                    <h3 style="margin-top: 1rem;">Weekly Adherence</h3>
+                </div>
+                <div>
+                    <h3>This Week's Summary</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="margin: 0.5rem 0">
+                            <i class="fas fa-check" style="color: var(--success)"></i>
+                            Taken on time: 15 doses
+                        </li>
+                        <li style="margin: 0.5rem 0">
+                            <i class="fas fa-clock" style="color: var(--warning)"></i>
+                            Delayed: 3 doses
+                        </li>
+                        <li style="margin: 0.5rem 0">
+                            <i class="fas fa-times" style="color: var(--danger)"></i>
+                            Missed: 2 doses
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-overlay" id="formOverlay"></div>
+    <div class="add-medicine-form" id="addMedicineForm">
+        <h2>Add New Medicine</h2>
+        <input type="text" class="input" placeholder="Medicine Name">
+        <input type="text" class="input" placeholder="Dosage">
+        <input type="time" class="input" placeholder="Time">
+        <input type="number" class="input" placeholder="Duration (days)">
+        <textarea class="input" placeholder="Notes"></textarea>
+        <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+            <button class="btn btn-primary" style="flex: 1" onclick="closeAddMedicineForm()">Add</button>
+            <button class="btn" style="flex: 1" onclick="closeAddMedicineForm()">Cancel</button>
+        </div>
+    </div>
+
+    <nav class="nav-bar">
+        <a href="home.html"><i class="fas fa-home"></i>Home</a>
+        <a href="diagnosis.html"><i class="fas fa-stethoscope"></i>Diagnosis</a>
+        <a href="telemedicine.html"><i class="fas fa-video"></i>Consult</a>
+        <a href="medicine_tracker.html"><i class="fas fa-pills"></i>Medicine</a>
+        <a href="profile.html"><i class="fas fa-user"></i>Profile</a>
+    </nav>
+
+    <script>
+        function showAddMedicineForm() {
+            document.getElementById('formOverlay').style.display = 'block';
+            document.getElementById('addMedicineForm').style.display = 'block';
+        }
+
+        function closeAddMedicineForm() {
+            document.getElementById('formOverlay').style.display = 'none';
+            document.getElementById('addMedicineForm').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

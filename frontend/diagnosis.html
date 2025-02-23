@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AI-powered medical symptom checker and preliminary diagnosis tool">
     <title>Medzyme - AI Diagnosis</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -10,6 +11,8 @@
     --primary: #4F46E5;
     --primary-dark: #4338CA;
     --secondary: #818CF8;
+    --primary-light: #818CF8;
+    --primary-lighter: #C7D2FE;
     --success: #34D399;
     --warning: #FBBF24;
     --danger: #EF4444;
@@ -17,6 +20,7 @@
     --card: #FFFFFF;
     --text: #1F2937;
     --text-light: #6B7280;
+    --border: #E5E7EB;
 }
 
 * {
@@ -31,6 +35,7 @@ body {
     color: var(--text);
     min-height: 100vh;
     padding-bottom: 70px;
+    line-height: 1.5;
 }
 
 .container {
@@ -46,8 +51,18 @@ body {
     position: sticky;
     top: 0;
     z-index: 100;
+    backdrop-filter: blur(10px);
 }
 
+.header h1 {
+    font-size: 1.75rem;
+    background: linear-gradient(45deg, var(--primary), var(--primary-light));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* Navigation Bar Styles */
 .nav-bar {
     background: var(--card);
     box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
@@ -58,6 +73,7 @@ body {
     display: flex;
     justify-content: space-around;
     align-items: center;
+    z-index: 100;
 }
 
 .nav-bar a {
@@ -79,101 +95,294 @@ body {
     margin-bottom: 0.25rem;
 }
 
-.card {
-    background: var(--card);
-    border-radius: 0.5rem;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    padding: 1.5rem;
-    margin-bottom: 1rem;
+.nav-bar a.active {
+    color: var(--primary);
+    font-weight: bold;
 }
 
+.nav-bar a.active i {
+    color: var(--primary);
+}
+
+/* Card Styles */
+.card {
+    background: var(--card);
+    border-radius: 1rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+    animation: slideUp 0.5s ease-out;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Button Styles */
 .btn {
     padding: 0.75rem 1.5rem;
-    border-radius: 0.375rem;
-    font-weight: 500;
+    border-radius: 0.5rem;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
     border: none;
     outline: none;
+    margin: 0.5rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .btn-primary {
-    background-color: var(--primary);
+    background: linear-gradient(45deg, var(--primary), var(--primary-light));
     color: white;
+    box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);
 }
 
 .btn-primary:hover {
-    background-color: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 8px -1px rgba(79, 70, 229, 0.3);
 }
 
-.input {
+/* Symptom Search Styles */
+.symptom-search-container {
+    position: relative;
+    margin-bottom: 2rem;
+}
+
+.symptom-search {
     width: 100%;
-    padding: 0.75rem;
-    border: 1px solid #E5E7EB;
-    border-radius: 0.375rem;
-    margin-bottom: 1rem;
+    padding: 1rem 1rem 1rem 3rem;
+    border: 2px solid var(--border);
+    border-radius: 1rem;
     font-size: 1rem;
+    transition: all 0.2s;
+    background: var(--background);
 }
 
-.grid {
+.symptom-search:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-lighter);
+    outline: none;
+}
+
+.search-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-light);
+}
+
+/* Symptoms Grid Styles */
+.symptoms-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     gap: 1rem;
+    margin-top: 1rem;
+}
+
+.symptom-checkbox {
+    position: relative;
+    padding: 1rem;
+    border: 2px solid var(--border);
+    border-radius: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: var(--card);
+}
+
+.symptom-checkbox:hover {
+    border-color: var(--primary-light);
+    background: var(--primary-lighter);
+    transform: translateY(-2px);
+}
+
+.symptom-checkbox input[type="checkbox"] {
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: 0.25rem;
+    border: 2px solid var(--border);
+    transition: all 0.2s;
+}
+
+/* Loading State Styles */
+.loading {
+    display: none;
+    text-align: center;
+    padding: 3rem;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.loading i {
+    color: var(--primary);
+    font-size: 2.5rem;
+    animation: spin 1s linear infinite;
+}
+
+/* Diagnosis Result Styles */
+.diagnosis-result {
+    display: none;
+    animation: slideUp 0.5s ease-out;
+}
+
+.result-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--border);
+}
+
+.severity-indicator {
+    height: 10px;
+    background: var(--border);
+    border-radius: 5px;
+    margin: 1rem 0;
+    overflow: hidden;
+}
+
+.severity-bar {
+    height: 100%;
+    background: linear-gradient(45deg, var(--primary), var(--primary-light));
+    border-radius: 5px;
+    transition: width 0.6s ease-out;
+}
+
+.confidence-badge {
+    background: linear-gradient(45deg, var(--primary), var(--primary-light));
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    animation: pulse 2s infinite;
+}
+
+.condition-item {
+    padding: 1rem;
+    border: 2px solid var(--border);
+    border-radius: 0.75rem;
+    margin-bottom: 1rem;
+    transition: all 0.2s;
+}
+
+.condition-item:hover {
+    border-color: var(--primary-light);
+    transform: translateX(5px);
+}
+
+.confidence-bar {
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    margin: 0.5rem 0;
+    overflow: hidden;
+}
+
+.confidence-fill {
+    height: 100%;
+    background: linear-gradient(45deg, var(--primary), var(--primary-light));
+    border-radius: 3px;
+    transition: width 0.6s ease-out;
+}
+
+/* Selected Symptoms Styles */
+.selected-symptoms {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin: 1.5rem 0;
+    min-height: 44px;
+    padding: 0.5rem;
+    border-radius: 0.75rem;
+    background: var(--background);
+}
+
+.selected-symptom {
+    background: linear-gradient(45deg, var(--primary), var(--primary-light));
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.selected-symptom button {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 0.25rem;
+    transition: all 0.2s;
+}
+
+.selected-symptom button:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+}
+
+/* Recommendation List Styles */
+.recommendation-list {
+    list-style: none;
     margin: 1rem 0;
 }
 
-        .symptom-checker {
-            max-width: 800px;
-            margin: 0 auto;
-        }
+.recommendation-list li {
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background: var(--background);
+    border-radius: 0.75rem;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
 
-        .symptoms-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            margin: 1rem 0;
-        }
+.recommendation-list li:hover {
+    transform: translateX(5px);
+    background: var(--primary-lighter);
+}
 
-        .symptom-tag {
-            background-color: #E5E7EB;
-            padding: 0.5rem 1rem;
-            border-radius: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            cursor: pointer;
-        }
+.recommendation-list li i {
+    color: var(--primary);
+}
 
-        .symptom-tag:hover {
-            background-color: #D1D5DB;
-        }
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
 
-        .diagnosis-result {
-            margin-top: 2rem;
-            display: none;
-        }
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
 
-        .severity {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin: 1rem 0;
-        }
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
 
-        .severity-indicator {
-            width: 100%;
-            height: 8px;
-            background-color: #E5E7EB;
-            border-radius: 4px;
-            overflow: hidden;
-        }
-
-        .severity-bar {
-            height: 100%;
-            width: 60%;
-            background-color: var(--warning);
-            transition: width 0.3s;
-        }
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
     </style>
 </head>
 <body>
@@ -183,94 +392,449 @@ body {
         </div>
     </header>
 
-    <div class="container">
+    <main class="container">
         <div class="symptom-checker">
             <div class="card">
                 <h2>Symptom Checker</h2>
-                <p>Select your symptoms for an AI-powered preliminary diagnosis</p>
+                <p class="help-text">Select your symptoms for an AI-powered preliminary diagnosis. Be as specific as possible.</p>
                 
-                <input type="text" class="input" placeholder="Search symptoms...">
-                
-                <div class="symptoms-list">
-                    <div class="symptom-tag">
-                        <span>Headache</span>
-                        <i class="fas fa-plus"></i>
-                    </div>
-                    <div class="symptom-tag">
-                        <span>Fever</span>
-                        <i class="fas fa-plus"></i>
-                    </div>
-                    <div class="symptom-tag">
-                        <span>Cough</span>
-                        <i class="fas fa-plus"></i>
-                    </div>
-                    <div class="symptom-tag">
-                        <span>Fatigue</span>
-                        <i class="fas fa-plus"></i>
+                <div class="symptom-search-container">
+                    <i class="fas fa-search search-icon"></i>
+                    <input 
+                        type="text" 
+                        class="symptom-search" 
+                        placeholder="Search symptoms..."
+                        id="symptomSearch"
+                    >
+                </div>
+
+                <div class="selected-symptoms" id="selectedSymptoms"></div>
+
+                <div class="symptom-category">
+                    <h3>Common Symptoms</h3>
+                    <div class="symptoms-grid" id="symptomsGrid">
+                        <!-- Symptoms will be populated by JavaScript -->
                     </div>
                 </div>
 
-                <button class="btn btn-primary" onclick="diagnose()">Get Diagnosis</button>
+                <div class="quick-actions">
+                    <button class="btn btn-primary" id="diagnoseBtn" onclick="performDiagnosis()">
+                        <i class="fas fa-stethoscope"></i>
+                        Get Diagnosis
+                    </button>
+                    <button class="btn" onclick="clearAll()">
+                        <i class="fas fa-times"></i>
+                        Clear All
+                    </button>
+                </div>
+            </div>
+
+            <div class="loading" id="loading">
+                <i class="fas fa-spinner"></i>
+                <p>Analyzing your symptoms...</p>
             </div>
 
             <div class="diagnosis-result card" id="diagnosisResult">
-                <h3>Preliminary Diagnosis</h3>
+                <div class="result-header">
+                    <h3>Preliminary Diagnosis</h3>
+                    <span class="confidence-badge">AI Confidence: <span id="confidence">--</span></span>
+                </div>
                 
                 <div class="severity">
                     <span>Severity Level:</span>
                     <div class="severity-indicator">
-                        <div class="severity-bar"></div>
+                        <div class="severity-bar" id="severityBar"></div>
                     </div>
-                    <span>Moderate</span>
+                    <span id="severityText">Moderate</span>
                 </div>
 
-                <div class="grid">
-                    <div class="card">
-                        <h4>Likely Condition</h4>
-                        <p>Common Cold</p>
-                        <p>Confidence: 85%</p>
-                    </div>
-                    <div class="card">
-                        <h4>Recommended Action</h4>
-                        <p>Rest and monitor symptoms</p>
-                        <button class="btn btn-primary" onclick="location.href='telemedicine.html'">Consult Doctor</button>
-                    </div>
+                <div class="result-card">
+                    <h4>Likely Conditions</h4>
+                    <div id="conditions"></div>
                 </div>
 
-                <div class="card">
-                    <h4>Additional Information</h4>
-                    <ul style="list-style: none; padding: 0">
-                        <li style="margin: 0.5rem 0">
-                            <i class="fas fa-info-circle" style="color: var(--primary)"></i>
-                            Stay hydrated and get plenty of rest
-                        </li>
-                        <li style="margin: 0.5rem 0">
-                            <i class="fas fa-info-circle" style="color: var(--primary)"></i>
-                            Take over-the-counter pain relievers if needed
-                        </li>
-                        <li style="margin: 0.5rem 0">
-                            <i class="fas fa-exclamation-triangle" style="color: var(--warning)"></i>
-                            Seek immediate care if symptoms worsen
-                        </li>
-                    </ul>
+                <div class="result-card">
+                    <h4>Recommended Actions</h4>
+                    <ul class="recommendation-list" id="recommendations"></ul>
                 </div>
+
+                <p class="help-text">
+                    <i class="fas fa-info-circle"></i>
+                    This is an AI-powered preliminary diagnosis. Always consult with a healthcare professional for proper medical advice.
+                </p>
             </div>
         </div>
-    </div>
+    </main>
 
     <nav class="nav-bar">
         <a href="home.html"><i class="fas fa-home"></i>Home</a>
-        <a href="diagnosis.html"><i class="fas fa-stethoscope"></i>Diagnosis</a>
+        <a href="diagnosis.html" class="active"><i class="fas fa-stethoscope"></i>Diagnosis</a>
         <a href="telemedicine.html"><i class="fas fa-video"></i>Consult</a>
         <a href="medicine_tracker.html"><i class="fas fa-pills"></i>Medicine</a>
         <a href="profile.html"><i class="fas fa-user"></i>Profile</a>
-    </nav>
-
-    <script>
-        function diagnose() {
-            document.getElementById('diagnosisResult').style.display = 'block';
-            document.getElementById('diagnosisResult').scrollIntoView({ behavior: 'smooth' });
+        </nav>
+    
+        <script>
+            // Enhanced disease database with expanded symptoms and conditions
+            const diseaseDatabase = {
+                "Common Cold": {
+                    symptoms: ["fever", "cough", "sore_throat", "runny_nose", "fatigue", "congestion", "sneezing"],
+                    severity: 0.3,
+                    recommendations: [
+                        "Rest and stay hydrated",
+                        "Take over-the-counter cold medicine",
+                        "Use saline nasal drops",
+                        "Monitor symptoms for 7-10 days",
+                        "Practice good hand hygiene"
+                    ]
+                },
+                "Influenza": {
+                    symptoms: ["high_fever", "body_ache", "fatigue", "cough", "headache", "chills", "muscle_pain"],
+                    severity: 0.6,
+                    recommendations: [
+                        "Get plenty of rest",
+                        "Take fever reducers",
+                        "Stay hydrated",
+                        "Consider antiviral medications",
+                        "Isolate to prevent spread"
+                    ]
+                },
+                "COVID-19": {
+                    symptoms: ["fever", "dry_cough", "fatigue", "loss_of_taste", "shortness_of_breath", "body_ache", "headache"],
+                    severity: 0.8,
+                    recommendations: [
+                        "Isolate immediately",
+                        "Get tested for COVID-19",
+                        "Monitor oxygen levels",
+                        "Contact healthcare provider",
+                        "Follow local health guidelines"
+                    ]
+                },
+                "Migraine": {
+                    symptoms: ["severe_headache", "nausea", "sensitivity_to_light", "dizziness", "visual_aura", "neck_pain"],
+                    severity: 0.5,
+                    recommendations: [
+                        "Rest in a dark, quiet room",
+                        "Take prescribed migraine medication",
+                        "Apply cold/hot compress",
+                        "Stay hydrated",
+                        "Track triggers and symptoms"
+                    ]
+                },
+                "Seasonal Allergies": {
+                    symptoms: ["sneezing", "itchy_eyes", "runny_nose", "congestion", "cough", "fatigue"],
+                    severity: 0.2,
+                    recommendations: [
+                        "Take antihistamines",
+                        "Avoid allergen triggers",
+                        "Use air purifiers",
+                        "Consider nasal sprays",
+                        "Monitor pollen forecasts"
+                    ]
+                },
+                "Bronchitis": {
+                    symptoms: ["persistent_cough", "chest_discomfort", "fatigue", "mild_fever", "shortness_of_breath"],
+                    severity: 0.5,
+                    recommendations: [
+                        "Rest and stay hydrated",
+                        "Use a humidifier",
+                        "Consider over-the-counter cough medicine",
+                        "Avoid smoking and secondhand smoke",
+                        "Monitor symptoms for improvement"
+                    ]
+                },
+                "Gastroenteritis": {
+                    symptoms: ["nausea", "vomiting", "diarrhea", "stomach_pain", "fever", "fatigue"],
+                    severity: 0.4,
+                    recommendations: [
+                        "Stay hydrated with clear fluids",
+                        "Follow the BRAT diet",
+                        "Get plenty of rest",
+                        "Monitor symptoms",
+                        "Seek medical care if severe"
+                    ]
+                },
+                "Anxiety Attack": {
+                    symptoms: ["rapid_heartbeat", "sweating", "trembling", "shortness_of_breath", "chest_pain", "dizziness"],
+                    severity: 0.6,
+                    recommendations: [
+                        "Practice deep breathing exercises",
+                        "Find a quiet, safe space",
+                        "Use grounding techniques",
+                        "Contact a mental health professional",
+                        "Consider anxiety management strategies"
+                    ]
+                }
+            };
+    
+            // Expanded available symptoms
+            const availableSymptoms = [
+                "fever", "high_fever", "cough", "dry_cough", "persistent_cough", "sore_throat",
+                "runny_nose", "fatigue", "body_ache", "headache", "severe_headache",
+                "loss_of_taste", "shortness_of_breath", "nausea", "sensitivity_to_light",
+                "dizziness", "sneezing", "itchy_eyes", "congestion", "chills",
+                "muscle_pain", "visual_aura", "neck_pain", "chest_discomfort",
+                "chest_pain", "stomach_pain", "vomiting", "diarrhea", "rapid_heartbeat",
+                "sweating", "trembling"
+            ];
+    
+            // Format symptom names for display
+            function formatSymptomName(symptom) {
+                return symptom.split('_')
+                    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                    .join(' ');
+            }
+    
+            // Initialize symptoms grid with animation
+            function initializeSymptoms() {
+                const symptomsGrid = document.getElementById('symptomsGrid');
+                availableSymptoms.forEach((symptom, index) => {
+                    const label = document.createElement('label');
+                    label.className = 'symptom-checkbox';
+                    label.style.opacity = '0';
+                    label.style.transform = 'translateY(20px)';
+                    label.innerHTML = `
+                        <input type="checkbox" value="${symptom}">
+                        ${formatSymptomName(symptom)}
+                    `;
+                    symptomsGrid.appendChild(label);
+                    
+                    // Staggered animation
+                    setTimeout(() => {
+                        label.style.transition = 'all 0.3s ease-out';
+                        label.style.opacity = '1';
+                        label.style.transform = 'translateY(0)';
+                    }, index * 50);
+                });
+            }
+    
+            // Enhanced diagnosis calculation with weighted symptoms
+            function calculateDiagnosis(selectedSymptoms) {
+                const results = [];
+                
+                for (const [disease, data] of Object.entries(diseaseDatabase)) {
+                    const matchingSymptoms = data.symptoms.filter(symptom => 
+                        selectedSymptoms.includes(symptom)
+                    );
+                    
+                    // Calculate weighted confidence score
+                    const primarySymptoms = data.symptoms.slice(0, 3); // First 3 symptoms are primary
+                    const primaryMatches = matchingSymptoms.filter(symptom => 
+                        primarySymptoms.includes(symptom)
+                    ).length;
+                    
+                    const confidence = (
+                        (primaryMatches * 1.5 + // Primary symptoms weighted 1.5x
+                        (matchingSymptoms.length - primaryMatches)) / // Secondary symptoms weighted 1x
+                        (primarySymptoms.length * 1.5 + 
+                        (data.symptoms.length - primarySymptoms.length))
+                    );
+                    
+                    if (confidence > 0.2) {
+                        results.push({
+                            disease,
+                            confidence: confidence * 100,
+                            severity: data.severity,
+                            recommendations: data.recommendations,
+                            matchingSymptoms: matchingSymptoms
+                        });
+                    }
+                }
+                
+                return results.sort((a, b) => b.confidence - a.confidence);
+            }
+    
+            // Perform diagnosis with enhanced UI feedback
+            function performDiagnosis() {
+                const selectedSymptoms = getSelectedSymptoms();
+                
+                if (selectedSymptoms.length === 0) {
+                    alert('Please select at least one symptom');
+                    return;
+                }
+    
+                // Show loading state
+                const loading = document.getElementById('loading');
+                loading.style.display = 'block';
+                document.getElementById('diagnosisResult').style.display = 'none';
+    
+                // Simulate API delay
+                setTimeout(() => {
+                    const results = calculateDiagnosis(selectedSymptoms);
+                    
+                    if (results.length === 0) {
+                        alert('No matching conditions found. Please consult a healthcare provider.');
+                        loading.style.display = 'none';
+                        return;
+                    }
+    
+                    // Update UI with enhanced animations
+                    updateDiagnosisUI(results);
+                    
+                    // Show results with animation
+                    loading.style.display = 'none';
+                    const diagnosisResult = document.getElementById('diagnosisResult');
+                    diagnosisResult.style.display = 'block';
+                    diagnosisResult.style.animation = 'slideUp 0.5s ease-out';
+                }, 1500);
+            }
+    
+            // Update diagnosis UI with enhanced visualization
+            function updateDiagnosisUI(results) {
+                const confidence = document.getElementById('confidence');
+                const severityBar = document.getElementById('severityBar');
+                const severityText = document.getElementById('severityText');
+                const conditions = document.getElementById('conditions');
+                const recommendations = document.getElementById('recommendations');
+    
+                // Update confidence with animation
+                const topConfidence = Math.round(results[0].confidence);
+                animateNumber(confidence, topConfidence);
+    
+                // Update severity with animation
+                const maxSeverity = Math.max(...results.map(r => r.severity));
+                severityBar.style.width = '0%';
+                setTimeout(() => {
+                    severityBar.style.width = `${maxSeverity * 100}%`;
+                }, 100);
+                severityText.textContent = getSeverityText(maxSeverity);
+    
+                // Display conditions with enhanced styling
+                conditions.innerHTML = results.map(result => `
+                    <div class="condition-item">
+                        <h5>${result.disease}</h5>
+                        <div class="confidence-bar">
+                            <div class="confidence-fill" style="width: 0%"></div>
+                        </div>
+                        <span>${Math.round(result.confidence)}% match</span>
+                        <p class="matching-symptoms">
+                            Key matching symptoms: ${result.matchingSymptoms.map(formatSymptomName).join(', ')}
+                        </p>
+                    </div>
+                `).join('');
+    
+                // Animate confidence bars
+                setTimeout(() => {
+                    document.querySelectorAll('.confidence-fill').forEach((bar, index) => {
+                        bar.style.width = `${results[index].confidence}%`;
+                    });
+                }, 100);
+    
+                // Display recommendations with icons
+                recommendations.innerHTML = results[0].recommendations.map(rec => `
+                    <li>
+                        <i class="fas fa-check-circle"></i>
+                        ${rec}
+                    </li>
+                `).join('');
+            }
+    
+            // Animate number counting up
+            function animateNumber(element, target) {
+                const duration = 1000;
+                const steps = 60;
+                const increment = target / steps;
+                let current = 0;
+                const interval = duration / steps;
+    
+                const counter = setInterval(() => {
+                    current += increment;
+                    if (current >= target) {
+                        current = target;
+                        clearInterval(counter);
+                    }
+                    element.textContent = `${Math.round(current)}%`;
+                }, interval);
+            }
+    
+            // Get severity text with enhanced descriptions
+            function getSeverityText(severity) {
+                if (severity < 0.3) return 'Mild - Monitor and manage at home';
+                if (severity < 0.6) return 'Moderate - Consider medical consultation';
+                if (severity < 0.8) return 'Severe - Seek medical attention';
+                return 'Critical - Immediate medical attention needed';
+            }
+    
+            // Initialize all components
+            document.addEventListener('DOMContentLoaded', () => {
+                initializeSymptoms();
+                initializeSearch();
+                initializeCheckboxListeners();
+            });
+    
+            function getSelectedSymptoms() {
+            return Array.from(document.querySelectorAll('.symptom-checkbox input:checked'))
+                .map(checkbox => checkbox.value);
         }
-    </script>
-</body>
-</html>
+             // Clear all selections
+        function clearAll() {
+            // Clear checkboxes
+            document.querySelectorAll('.symptom-checkbox input').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+
+            // Clear results
+            document.getElementById('diagnosisResult').style.display = 'none';
+            document.getElementById('loading').style.display = 'none';
+
+            // Clear search
+            document.getElementById('symptomSearch').value = '';
+            filterSymptoms('');
+        }
+
+        // Filter symptoms based on search
+        function filterSymptoms(searchTerm) {
+            const symptomsGrid = document.getElementById('symptomsGrid');
+            const symptoms = symptomsGrid.querySelectorAll('.symptom-checkbox');
+            
+            symptoms.forEach(symptom => {
+                const symptomText = symptom.textContent.toLowerCase();
+                if (symptomText.includes(searchTerm.toLowerCase())) {
+                    symptom.style.display = '';
+                } else {
+                    symptom.style.display = 'none';
+                }
+            });
+        }
+
+        // Initialize search functionality
+        function initializeSearch() {
+            const searchInput = document.getElementById('symptomSearch');
+            searchInput.addEventListener('input', (e) => {
+                filterSymptoms(e.target.value);
+            });
+        }
+
+        // Update selected symptoms display
+        function updateSelectedSymptoms() {
+            const selectedContainer = document.getElementById('selectedSymptoms');
+            const selected = getSelectedSymptoms();
+            
+            selectedContainer.innerHTML = selected.map(symptom => `
+                <div class="selected-symptom">
+                    ${formatSymptomName(symptom)}
+                    <button onclick="removeSymptom('${symptom}')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        // Remove symptom
+        function removeSymptom(symptomValue) {
+            const checkbox = document.querySelector(`.symptom-checkbox input[value="${symptomValue}"]`);
+            if (checkbox) {
+                checkbox.checked = false;
+                updateSelectedSymptoms();
+            }
+        }
+
+        // Add event listeners to checkboxes
+        function initializeCheckboxListeners() {
+            document.querySelectorAll('.symptom-checkbox input').forEach(checkbox => {
+                checkbox.addEventListener('change', updateSelectedSymptoms);
+            });
+        }
+        </script>
+    </body>
+    </html>

@@ -272,6 +272,15 @@ body {
             font-weight: bold;
             color: var(--primary);
         }
+        .nav-bar a.active {
+    color: var(--primary); /* Highlight color */
+    font-weight: bold;
+}
+
+.nav-bar a.active i {
+    color: var(--primary); /* Highlight icon color */
+}
+
     </style>
 </head>
 <body>
@@ -386,7 +395,7 @@ body {
         <a href="home.html"><i class="fas fa-home"></i>Home</a>
         <a href="diagnosis.html"><i class="fas fa-stethoscope"></i>Diagnosis</a>
         <a href="telemedicine.html"><i class="fas fa-video"></i>Consult</a>
-        <a href="medicine_tracker.html"><i class="fas fa-pills"></i>Medicine</a>
+        <a href="medicine_tracker.html" class="active"><i class="fas fa-pills"></i>Medicine</a>
         <a href="profile.html"><i class="fas fa-user"></i>Profile</a>
     </nav>
 

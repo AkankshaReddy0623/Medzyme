@@ -1,5 +1,7 @@
 # Medzyme
 
+**Presentation**: https://docs.google.com/presentation/d/15-M1DM8In3yl7N-3VRd-aIkjz4qGkO9k/edit
+
 Medzyme is a telemedicine platform designed to facilitate remote diagnosis and monitoring using AI. The platform includes features such as a medicine tracker, report generation, and a user-friendly interface for seamless healthcare access.
 
 ## Features

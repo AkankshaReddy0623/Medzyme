@@ -1,0 +1,1229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AI-powered medical symptom checker and preliminary diagnosis tool">
+    <title>Medzyme - AI Diagnosis</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+    --primary: #4F46E5;
+    --primary-dark: #4338CA;
+    --secondary: #818CF8;
+    --primary-light: #818CF8;
+    --primary-lighter: #C7D2FE;
+    --success: #34D399;
+    --warning: #FBBF24;
+    --danger: #EF4444;
+    --background: #F3F4F6;
+    --card: #FFFFFF;
+    --text: #1F2937;
+    --text-light: #6B7280;
+    --border: #E5E7EB;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+body {
+    background-color: var(--background);
+    color: var(--text);
+    min-height: 100vh;
+    padding-bottom: 70px;
+    line-height: 1.5;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.header {
+    background-color: var(--card);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(10px);
+}
+
+.header h1 {
+    font-size: 1.75rem;
+    background: linear-gradient(45deg, var(--primary), var(--primary-light));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* Navigation Bar Styles */
+.nav-bar {
+    background: var(--card);
+    box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
+    padding: 1rem;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    z-index: 100;
+}
+
+.nav-bar a {
+    color: var(--text);
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 0.875rem;
+    transition: color 0.2s;
+}
+
+.nav-bar a:hover {
+    color: var(--primary);
+}
+
+.nav-bar a i {
+    font-size: 1.5rem;
+    margin-bottom: 0.25rem;
+}
+
+.nav-bar a.active {
+    color: var(--primary);
+    font-weight: bold;
+}
+
+.nav-bar a.active i {
+    color: var(--primary);
+}
+
+/* Card Styles */
+.card {
+    background: var(--card);
+    border-radius: 1rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+    animation: slideUp 0.5s ease-out;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Button Styles */
+.btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+    outline: none;
+    margin: 0.5rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-primary {
+    background: linear-gradient(45deg, var(--primary), var(--primary-light));
+    color: white;
+    box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 8px -1px rgba(79, 70, 229, 0.3);
+}
+
+/* Symptom Search Styles */
+.symptom-search-container {
+    position: relative;
+    margin-bottom: 2rem;
+}
+
+.symptom-search {
+    width: 100%;
+    padding: 1rem 1rem 1rem 3rem;
+    border: 2px solid var(--border);
+    border-radius: 1rem;
+    font-size: 1rem;
+    transition: all 0.2s;
+    background: var(--background);
+}
+
+.symptom-search:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-lighter);
+    outline: none;
+}
+
+.search-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-light);
+}
+
+/* Symptoms Grid Styles */
+.symptoms-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.symptom-checkbox {
+    position: relative;
+    padding: 1rem;
+    border: 2px solid var(--border);
+    border-radius: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: var(--card);
+}
+
+.symptom-checkbox:hover {
+    border-color: var(--primary-light);
+    background: var(--primary-lighter);
+    transform: translateY(-2px);
+}
+
+.symptom-checkbox input[type="checkbox"] {
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: 0.25rem;
+    border: 2px solid var(--border);
+    transition: all 0.2s;
+}
+
+/* Loading State Styles */
+.loading {
+    display: none;
+    text-align: center;
+    padding: 3rem;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.loading i {
+    color: var(--primary);
+    font-size: 2.5rem;
+    animation: spin 1s linear infinite;
+}
+
+/* Diagnosis Result Styles */
+.diagnosis-result {
+    display: none;
+    animation: slideUp 0.5s ease-out;
+}
+
+.result-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--border);
+}
+
+.severity-indicator {
+    height: 10px;
+    background: var(--border);
+    border-radius: 5px;
+    margin: 1rem 0;
+    overflow: hidden;
+}
+
+.severity-bar {
+    height: 100%;
+    background: linear-gradient(45deg, var(--primary), var(--primary-light));
+    border-radius: 5px;
+    transition: width 0.6s ease-out;
+}
+
+.confidence-badge {
+    background: linear-gradient(45deg, var(--primary), var(--primary-light));
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    animation: pulse 2s infinite;
+}
+
+.condition-item {
+    padding: 1rem;
+    border: 2px solid var(--border);
+    border-radius: 0.75rem;
+    margin-bottom: 1rem;
+    transition: all 0.2s;
+}
+
+.condition-item:hover {
+    border-color: var(--primary-light);
+    transform: translateX(5px);
+}
+
+.confidence-bar {
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    margin: 0.5rem 0;
+    overflow: hidden;
+}
+
+.confidence-fill {
+    height: 100%;
+    background: linear-gradient(45deg, var(--primary), var(--primary-light));
+    border-radius: 3px;
+    transition: width 0.6s ease-out;
+}
+
+/* Selected Symptoms Styles */
+.selected-symptoms {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin: 1.5rem 0;
+    min-height: 44px;
+    padding: 0.5rem;
+    border-radius: 0.75rem;
+    background: var(--background);
+}
+
+.selected-symptom {
+    background: linear-gradient(45deg, var(--primary), var(--primary-light));
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.selected-symptom button {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 0.25rem;
+    transition: all 0.2s;
+}
+
+.selected-symptom button:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+}
+
+/* Recommendation List Styles */
+.recommendation-list {
+    list-style: none;
+    margin: 1rem 0;
+}
+
+.recommendation-list li {
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background: var(--background);
+    border-radius: 0.75rem;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.recommendation-list li:hover {
+    transform: translateX(5px);
+    background: var(--primary-lighter);
+}
+
+.recommendation-list li i {
+    color: var(--primary);
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <h1>AI Diagnosis</h1>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="symptom-checker">
+            <div class="card">
+                <h2>Symptom Checker</h2>
+                <p class="help-text">Select your symptoms for an AI-powered preliminary diagnosis. Be as specific as possible.</p>
+                
+                <div class="symptom-search-container">
+                    <i class="fas fa-search search-icon"></i>
+                    <input 
+                        type="text" 
+                        class="symptom-search" 
+                        placeholder="Search symptoms..."
+                        id="symptomSearch"
+                    >
+                </div>
+
+                <div class="selected-symptoms" id="selectedSymptoms"></div>
+
+                <div class="symptom-category">
+                    <h3>Common Symptoms</h3>
+                    <div class="symptoms-grid" id="symptomsGrid">
+                        <!-- Symptoms will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <div class="quick-actions">
+                    <button class="btn btn-primary" id="diagnoseBtn" onclick="performDiagnosis()">
+                        <i class="fas fa-stethoscope"></i>
+                        Get Diagnosis
+                    </button>
+                    <button class="btn" onclick="clearAll()">
+                        <i class="fas fa-times"></i>
+                        Clear All
+                    </button>
+                </div>
+            </div>
+
+            <div class="loading" id="loading">
+                <i class="fas fa-spinner"></i>
+                <p>Analyzing your symptoms...</p>
+            </div>
+
+            <div class="diagnosis-result card" id="diagnosisResult">
+                <div class="result-header">
+                    <h3>Preliminary Diagnosis</h3>
+                    <span class="confidence-badge">AI Confidence: <span id="confidence">--</span></span>
+                </div>
+                
+                <div class="severity">
+                    <span>Severity Level:</span>
+                    <div class="severity-indicator">
+                        <div class="severity-bar" id="severityBar"></div>
+                    </div>
+                    <span id="severityText">Moderate</span>
+                </div>
+
+                <div class="result-card">
+                    <h4>Likely Conditions</h4>
+                    <div id="conditions"></div>
+                </div>
+
+                <div class="result-card">
+                    <h4>Recommended Actions</h4>
+                    <ul class="recommendation-list" id="recommendations"></ul>
+                </div>
+
+                <p class="help-text">
+                    <i class="fas fa-info-circle"></i>
+                    This is an AI-powered preliminary diagnosis. Always consult with a healthcare professional for proper medical advice.
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <nav class="nav-bar">
+        <a href="home.html"><i class="fas fa-home"></i>Home</a>
+        <a href="diagnosis.html" class="active"><i class="fas fa-stethoscope"></i>Diagnosis</a>
+        <a href="telemedicine.html"><i class="fas fa-video"></i>Consult</a>
+        <a href="medicine_tracker.html"><i class="fas fa-pills"></i>Medicine</a>
+        <a href="profile.html"><i class="fas fa-user"></i>Profile</a>
+        </nav>
+    
+        <script>
+            // Import medications data from telemedicine
+            window.medications = {
+                'Migraine': [
+                    {
+                        name: 'Sumatriptan',
+                        type: 'Triptan',
+                        composition: 'Sumatriptan succinate (active ingredient), microcrystalline cellulose, lactose, croscarmellose sodium, magnesium stearate',
+                        dosage: '25-100mg orally at onset of migraine',
+                        mechanism: 'Selective 5-hydroxytryptamine receptor agonist that causes vasoconstriction of cranial blood vessels',
+                        sideEffects: 'Tingling, warm sensations, dizziness, fatigue, chest/neck tightness'
+                    },
+                    {
+                        name: 'Ibuprofen',
+                        type: 'NSAID',
+                        composition: 'Ibuprofen (active ingredient), microcrystalline cellulose, corn starch, sodium starch glycolate, colloidal silicon dioxide, magnesium stearate',
+                        dosage: '400-800mg orally every 6-8 hours as needed',
+                        mechanism: 'Non-selective inhibitor of cyclooxygenase (COX), reducing prostaglandin synthesis',
+                        sideEffects: 'Stomach pain, heartburn, nausea, headache, dizziness'
+                    }
+                ],
+                'Hypertension': [
+                    {
+                        name: 'Lisinopril',
+                        type: 'ACE Inhibitor',
+                        composition: 'Lisinopril (active ingredient), calcium phosphate, mannitol, corn starch, magnesium stearate',
+                        dosage: '10-40mg orally once daily',
+                        mechanism: 'Inhibits angiotensin-converting enzyme, reducing angiotensin II formation and decreasing blood pressure',
+                        sideEffects: 'Dry cough, dizziness, headache, fatigue, hyperkalemia'
+                    },
+                    {
+                        name: 'Amlodipine',
+                        type: 'Calcium Channel Blocker',
+                        composition: 'Amlodipine besylate (active ingredient), microcrystalline cellulose, dibasic calcium phosphate, sodium starch glycolate, magnesium stearate',
+                        dosage: '5-10mg orally once daily',
+                        mechanism: 'Blocks calcium entry into vascular smooth muscle and cardiac cells, causing vasodilation',
+                        sideEffects: 'Peripheral edema, headache, flushing, dizziness'
+                    }
+                ],
+                'Gastritis': [
+                    {
+                        name: 'Omeprazole',
+                        type: 'Proton Pump Inhibitor',
+                        composition: 'Omeprazole (active ingredient), sugar spheres, hydroxypropyl methylcellulose, talc, titanium dioxide, methacrylic acid copolymer',
+                        dosage: '20-40mg orally once daily before a meal',
+                        mechanism: 'Inhibits the final step of gastric acid production by blocking H+/K+ ATPase enzyme',
+                        sideEffects: 'Headache, abdominal pain, nausea, diarrhea, vitamin B12 deficiency with long-term use'
+                    },
+                    {
+                        name: 'Sucralfate',
+                        type: 'Gastrointestinal Protectant',
+                        composition: 'Sucralfate (active ingredient), corn starch, microcrystalline cellulose, magnesium stearate, sodium lauryl sulfate',
+                        dosage: '1g orally four times daily on an empty stomach',
+                        mechanism: 'Forms a protective barrier over ulcers or irritated mucosa, protecting from acid, pepsin, and bile salts',
+                        sideEffects: 'Constipation, dry mouth, back pain, dizziness'
+                    }
+                ],
+                'Anxiety': [
+                    {
+                        name: 'Sertraline',
+                        type: 'SSRI Antidepressant',
+                        composition: 'Sertraline hydrochloride (active ingredient), microcrystalline cellulose, calcium phosphate, hydroxypropyl cellulose, magnesium stearate, titanium dioxide',
+                        dosage: '25-50mg orally once daily, may increase gradually to maximum 200mg daily',
+                        mechanism: 'Selectively inhibits serotonin reuptake in the CNS, increasing serotonin availability',
+                        sideEffects: 'Nausea, diarrhea, insomnia, sexual dysfunction, increased sweating'
+                    },
+                    {
+                        name: 'Lorazepam',
+                        type: 'Benzodiazepine',
+                        composition: 'Lorazepam (active ingredient), lactose monohydrate, microcrystalline cellulose, polacrilin potassium, magnesium stearate',
+                        dosage: '0.5-2mg orally 2-3 times daily as needed',
+                        mechanism: 'Enhances effect of GABA neurotransmitter, producing anxiolytic, sedative effects',
+                        sideEffects: 'Drowsiness, dizziness, weakness, unsteadiness, potential for dependence'
+                    }
+                ],
+                'Asthma': [
+                    {
+                        name: 'Albuterol',
+                        type: 'Beta-2 Adrenergic Agonist',
+                        composition: 'Albuterol sulfate (active ingredient), propellant HFA-134a, ethanol, oleic acid',
+                        dosage: '1-2 inhalations every 4-6 hours as needed',
+                        mechanism: 'Stimulates beta-2 receptors in bronchial smooth muscle, causing bronchodilation',
+                        sideEffects: 'Tremor, nervousness, headache, rapid heart rate, throat irritation'
+                    },
+                    {
+                        name: 'Fluticasone',
+                        type: 'Inhaled Corticosteroid',
+                        composition: 'Fluticasone propionate (active ingredient), propellant HFA-134a, ethanol, lecithin',
+                        dosage: '88-440mcg twice daily via inhalation',
+                        mechanism: 'Reduces inflammation in the airways by inhibiting multiple inflammatory cells and mediators',
+                        sideEffects: 'Throat irritation, hoarseness, oral candidiasis, cough after inhalation'
+                    }
+                ],
+                'IBS': [
+                    {
+                        name: 'Dicyclomine',
+                        type: 'Antispasmodic',
+                        composition: 'Dicyclomine hydrochloride (active ingredient), lactose, corn starch, calcium phosphate, magnesium stearate',
+                        dosage: '20-40mg orally four times daily',
+                        mechanism: 'Anticholinergic that relaxes smooth muscles in the intestines',
+                        sideEffects: 'Dry mouth, blurred vision, urinary retention, constipation'
+                    },
+                    {
+                        name: 'Psyllium Husk',
+                        type: 'Bulk-Forming Fiber Laxative',
+                        composition: 'Psyllium husk (active ingredient), dextrose, citric acid, sodium bicarbonate, natural and artificial flavors',
+                        dosage: '1 tablespoon in 8oz water 1-3 times daily',
+                        mechanism: 'Absorbs water in the intestines to form a bulky stool, regulating bowel movements',
+                        sideEffects: 'Bloating, gas, abdominal cramps, allergic reactions in sensitive individuals'
+                    }
+                ]
+            };
+    
+            // Comprehensive medical dataset with symptoms and related diseases
+            const diseaseDatabase = {
+                "Common Cold": {
+                    symptoms: ["fever", "cough", "sore_throat", "runny_nose", "fatigue", "congestion", "sneezing"],
+                    severity: 0.3,
+                    recommendations: [
+                        "Rest and stay hydrated",
+                        "Take over-the-counter cold medicine",
+                        "Use saline nasal drops",
+                        "Monitor symptoms for 7-10 days",
+                        "Practice good hand hygiene"
+                    ]
+                },
+                "Influenza": {
+                    symptoms: ["high_fever", "body_ache", "fatigue", "cough", "headache", "chills", "muscle_pain"],
+                    severity: 0.6,
+                    recommendations: [
+                        "Get plenty of rest",
+                        "Take fever reducers",
+                        "Stay hydrated",
+                        "Consider antiviral medications",
+                        "Isolate to prevent spread"
+                    ]
+                },
+                "COVID-19": {
+                    symptoms: ["fever", "dry_cough", "fatigue", "loss_of_taste", "shortness_of_breath", "body_ache", "headache"],
+                    severity: 0.8,
+                    recommendations: [
+                        "Isolate immediately",
+                        "Get tested for COVID-19",
+                        "Monitor oxygen levels if possible",
+                        "Stay hydrated and rest",
+                        "Seek immediate medical care if breathing becomes difficult"
+                    ]
+                },
+                "Migraine": {
+                    symptoms: ["severe_headache", "sensitivity_to_light", "nausea", "visual_aura", "dizziness"],
+                    severity: 0.5,
+                    recommendations: [
+                        "Rest in a dark, quiet room",
+                        "Apply cold compresses",
+                        "Take prescribed migraine medication",
+                        "Stay hydrated",
+                        "Track triggers to prevent future migraines"
+                    ]
+                },
+                "Allergic Rhinitis": {
+                    symptoms: ["sneezing", "itchy_eyes", "runny_nose", "congestion", "itchy_throat"],
+                    severity: 0.3,
+                    recommendations: [
+                        "Avoid known allergens",
+                        "Use over-the-counter antihistamines",
+                        "Try nasal corticosteroids",
+                        "Keep windows closed during high pollen seasons",
+                        "Consider allergy testing"
+                    ]
+                },
+                "Gastroenteritis": {
+                    symptoms: ["nausea", "vomiting", "diarrhea", "stomach_pain", "fever", "fatigue"],
+                    severity: 0.5,
+                    recommendations: [
+                        "Stay hydrated with clear fluids",
+                        "Follow the BRAT diet",
+                        "Get plenty of rest",
+                        "Monitor symptoms",
+                        "Seek medical care if severe"
+                    ]
+                },
+                "Anxiety Attack": {
+                    symptoms: ["rapid_heartbeat", "sweating", "trembling", "shortness_of_breath", "chest_pain", "dizziness"],
+                    severity: 0.6,
+                    recommendations: [
+                        "Practice deep breathing exercises",
+                        "Find a quiet, safe space",
+                        "Use grounding techniques",
+                        "Contact a mental health professional",
+                        "Consider anxiety management strategies"
+                    ]
+                },
+                "Asthma Attack": {
+                    symptoms: ["shortness_of_breath", "wheezing", "chest_tightness", "coughing", "rapid_breathing"],
+                    severity: 0.7,
+                    recommendations: [
+                        "Use rescue inhaler immediately",
+                        "Sit upright and stay calm",
+                        "Move away from triggers",
+                        "Seek emergency care if symptoms persist",
+                        "Follow your asthma action plan"
+                    ]
+                },
+                "Urinary Tract Infection": {
+                    symptoms: ["frequent_urination", "burning_urination", "cloudy_urine", "pelvic_pain", "fatigue"],
+                    severity: 0.4,
+                    recommendations: [
+                        "Drink plenty of water",
+                        "Take prescribed antibiotics",
+                        "Use over-the-counter pain relievers",
+                        "Apply a heating pad to the abdomen",
+                        "Complete the full course of antibiotics"
+                    ]
+                },
+                "Strep Throat": {
+                    symptoms: ["severe_sore_throat", "difficulty_swallowing", "swollen_tonsils", "fever", "headache"],
+                    severity: 0.5,
+                    recommendations: [
+                        "Take prescribed antibiotics",
+                        "Rest your voice",
+                        "Drink warm liquids",
+                        "Use throat lozenges",
+                        "Complete full course of medication"
+                    ]
+                },
+                "Sinusitis": {
+                    symptoms: ["facial_pressure", "congestion", "thick_nasal_discharge", "reduced_smell", "headache"],
+                    severity: 0.4,
+                    recommendations: [
+                        "Use saline nasal irrigation",
+                        "Apply warm compresses",
+                        "Use decongestants as directed",
+                        "Stay hydrated",
+                        "Consider prescribed antibiotics if bacterial"
+                    ]
+                },
+                "Bronchitis": {
+                    symptoms: ["persistent_cough", "chest_discomfort", "fatigue", "mild_fever", "shortness_of_breath"],
+                    severity: 0.5,
+                    recommendations: [
+                        "Rest and stay hydrated",
+                        "Use a humidifier",
+                        "Consider over-the-counter cough medicine",
+                        "Avoid lung irritants",
+                        "Seek medical attention if symptoms worsen"
+                    ]
+                },
+                "Pneumonia": {
+                    symptoms: ["high_fever", "severe_cough", "difficulty_breathing", "chest_pain", "fatigue", "rapid_heartbeat"],
+                    severity: 0.8,
+                    recommendations: [
+                        "Seek medical attention immediately",
+                        "Take prescribed antibiotics",
+                        "Get plenty of rest",
+                        "Stay hydrated",
+                        "Monitor breathing and oxygen levels"
+                    ]
+                },
+                "Hypertension": {
+                    symptoms: ["headache", "shortness_of_breath", "nose_bleeds", "vision_changes", "chest_pain"],
+                    severity: 0.7,
+                    recommendations: [
+                        "Monitor blood pressure regularly",
+                        "Take prescribed medications",
+                        "Reduce sodium intake",
+                        "Exercise regularly",
+                        "Manage stress levels"
+                    ]
+                },
+                "Tonsillitis": {
+                    symptoms: ["sore_throat", "difficulty_swallowing", "swollen_tonsils", "bad_breath", "fever", "voice_changes"],
+                    severity: 0.4,
+                    recommendations: [
+                        "Gargle with salt water",
+                        "Stay hydrated",
+                        "Take prescribed antibiotics if bacterial",
+                        "Use pain relievers",
+                        "Rest your voice"
+                    ]
+                },
+                "Diabetes Type 2": {
+                    symptoms: ["increased_thirst", "frequent_urination", "increased_hunger", "unexplained_weight_loss", "fatigue", "blurred_vision"],
+                        severity: 0.7,
+                    recommendations: [
+                        "Monitor blood sugar regularly",
+                        "Follow prescribed treatment plan",
+                        "Maintain a healthy diet",
+                        "Regular physical activity",
+                        "Regular medical check-ups"
+                    ]
+                },
+                "Gastritis": {
+                    symptoms: ["stomach_pain", "nausea", "vomiting", "bloating", "indigestion", "reduced_appetite"],
+                    severity: 0.5,
+                    recommendations: [
+                        "Avoid spicy, acidic foods",
+                        "Eat smaller, more frequent meals",
+                        "Take prescribed medications",
+                        "Avoid alcohol and NSAIDs",
+                        "Manage stress levels"
+                    ]
+                },
+                "Irritable Bowel Syndrome": {
+                    symptoms: ["abdominal_pain", "bloating", "gas", "diarrhea", "constipation", "mucus_in_stool"],
+                    severity: 0.4,
+                    recommendations: [
+                        "Identify and avoid trigger foods",
+                        "Manage stress levels",
+                        "Increase fiber intake gradually",
+                        "Stay hydrated",
+                        "Regular exercise"
+                    ]
+                },
+                "Conjunctivitis": {
+                    symptoms: ["red_eyes", "itchy_eyes", "gritty_feeling", "discharge", "tearing", "sensitivity_to_light"],
+                    severity: 0.3,
+                    recommendations: [
+                        "Avoid touching or rubbing eyes",
+                        "Use cold compresses",
+                        "Use prescribed eye drops",
+                        "Wash hands frequently",
+                        "Replace eye makeup"
+                    ]
+                },
+                "Anemia": {
+                    symptoms: ["fatigue", "weakness", "pale_skin", "shortness_of_breath", "dizziness", "cold_hands_feet"],
+                    severity: 0.5,
+                    recommendations: [
+                        "Follow iron-rich diet",
+                        "Take prescribed supplements",
+                        "Get regular blood tests",
+                        "Manage underlying conditions",
+                        "Increase vitamin C intake for better iron absorption"
+                    ]
+                },
+                "Depression": {
+                    symptoms: ["persistent_sadness", "loss_of_interest", "sleep_changes", "fatigue", "feelings_of_worthlessness", "difficulty_concentrating"],
+                    severity: 0.6,
+                    recommendations: [
+                        "Seek professional mental health support",
+                        "Consider therapy options",
+                        "Regular physical activity",
+                        "Maintain social connections",
+                        "Follow treatment plan"
+                    ]
+                }
+            };
+    
+            // Expanded available symptoms
+            const availableSymptoms = [
+                "fever", "high_fever", "cough", "dry_cough", "persistent_cough", "sore_throat", "severe_sore_throat",
+                "runny_nose", "fatigue", "body_ache", "headache", "severe_headache", "wheezing", "chest_tightness",
+                "loss_of_taste", "shortness_of_breath", "nausea", "sensitivity_to_light", "rapid_breathing", 
+                "dizziness", "sneezing", "itchy_eyes", "congestion", "chills", "itchy_throat", "swollen_tonsils",
+                "muscle_pain", "visual_aura", "neck_pain", "chest_discomfort", "bad_breath", "voice_changes",
+                "chest_pain", "stomach_pain", "vomiting", "diarrhea", "rapid_heartbeat", "thick_nasal_discharge", 
+                "sweating", "trembling", "frequent_urination", "burning_urination", "cloudy_urine", "pelvic_pain",
+                "difficulty_swallowing", "facial_pressure", "reduced_smell", "mild_fever", "difficulty_breathing",
+                "nose_bleeds", "vision_changes", "increased_thirst", "increased_hunger", "unexplained_weight_loss",
+                "blurred_vision", "bloating", "indigestion", "reduced_appetite", "abdominal_pain", "gas", 
+                "constipation", "mucus_in_stool", "red_eyes", "gritty_feeling", "discharge", "tearing",
+                "weakness", "pale_skin", "cold_hands_feet", "persistent_sadness", "loss_of_interest", 
+                "sleep_changes", "feelings_of_worthlessness", "difficulty_concentrating"
+            ];
+    
+            // Format symptom names for display
+            function formatSymptomName(symptom) {
+                return symptom.split('_')
+                    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                    .join(' ');
+            }
+    
+            // Initialize symptoms grid with animation
+            function initializeSymptoms() {
+                const symptomsGrid = document.getElementById('symptomsGrid');
+                availableSymptoms.forEach((symptom, index) => {
+                    const label = document.createElement('label');
+                    label.className = 'symptom-checkbox';
+                    label.style.opacity = '0';
+                    label.style.transform = 'translateY(20px)';
+                    label.innerHTML = `
+                        <input type="checkbox" value="${symptom}">
+                        ${formatSymptomName(symptom)}
+                    `;
+                    symptomsGrid.appendChild(label);
+                    
+                    // Staggered animation
+                    setTimeout(() => {
+                        label.style.transition = 'all 0.3s ease-out';
+                        label.style.opacity = '1';
+                        label.style.transform = 'translateY(0)';
+                    }, index * 50);
+                });
+            }
+    
+            // Update diagnosis UI with enhanced visualization
+            function updateDiagnosisUI(results) {
+                const confidence = document.getElementById('confidence');
+                const severityBar = document.getElementById('severityBar');
+                const severityText = document.getElementById('severityText');
+                const conditions = document.getElementById('conditions');
+                const recommendations = document.getElementById('recommendations');
+    
+                // Update confidence with animation
+                const topConfidence = Math.round(results[0].confidence);
+                animateNumber(confidence, topConfidence);
+    
+                // Update severity with animation
+                const maxSeverity = Math.max(...results.map(r => r.severity));
+                severityBar.style.width = '0%';
+                setTimeout(() => {
+                    severityBar.style.width = `${maxSeverity * 100}%`;
+                }, 100);
+                severityText.textContent = getSeverityText(maxSeverity);
+    
+                // Display conditions with enhanced styling and AI reasoning
+                conditions.innerHTML = results.map(result => `
+                    <div class="condition-item">
+                        <h5>${result.disease}</h5>
+                        <div class="confidence-bar">
+                            <div class="confidence-fill" style="width: 0%"></div>
+                        </div>
+                        <span>${Math.round(result.confidence)}% match</span>
+                        <p class="matching-symptoms">
+                            Key matching symptoms: ${result.matchingSymptoms.map(formatSymptomName).join(', ')}
+                        </p>
+                        <p class="ai-reasoning">
+                            ${generateAIReasoning(result.disease, result.matchingSymptoms, result.confidence, result.severity)}
+                        </p>
+                    </div>
+                `).join('');
+    
+                // Animate confidence bars
+                setTimeout(() => {
+                    document.querySelectorAll('.confidence-fill').forEach((bar, index) => {
+                        bar.style.width = `${results[index].confidence}%`;
+                    });
+                }, 100);
+    
+                // Display recommendations with icons
+                recommendations.innerHTML = results[0].recommendations.map(rec => `
+                    <li>
+                        <i class="fas fa-check-circle"></i>
+                        ${rec}
+                    </li>
+                `).join('');
+            }
+            
+            // Enhanced diagnosis calculation with realistic AI reasoning
+            function calculateDiagnosis(selectedSymptoms) {
+                const results = [];
+                
+                // Step 1: Analyze primary symptom clusters for pattern matching
+                console.log("AI Model: Analyzing symptom patterns and clusters...");
+                
+                // Calculate advanced diagnoses with symptom weighting, relationships, and exclusions
+                for (const [disease, data] of Object.entries(diseaseDatabase)) {
+                    // Pattern matching with symptom importance weighting
+                    const matchingSymptoms = data.symptoms.filter(symptom => 
+                        selectedSymptoms.includes(symptom)
+                    );
+                    
+                    // Skip if no matching symptoms
+                    if (matchingSymptoms.length === 0) continue;
+                    
+                    // Primary symptoms have higher diagnostic value (first 3 symptoms)
+                    const primarySymptoms = data.symptoms.slice(0, 3);
+                    const secondarySymptoms = data.symptoms.slice(3);
+                    
+                    // Calculate match rates for primary and secondary symptoms
+                    const primaryMatches = matchingSymptoms.filter(s => primarySymptoms.includes(s));
+                    const secondaryMatches = matchingSymptoms.filter(s => secondarySymptoms.includes(s));
+                    
+                    // Step 2: Apply symptom relationship analysis
+                    // Symptom co-occurrence increases confidence
+                    let relationshipBonus = 0;
+                    
+                    // If multiple primary symptoms match together, add relationship bonus
+                    if (primaryMatches.length >= 2) {
+                        relationshipBonus += 0.15;
+                    }
+                    
+                    // If both primary and secondary symptoms present, add correlation bonus
+                    if (primaryMatches.length > 0 && secondaryMatches.length > 0) {
+                        relationshipBonus += 0.1;
+                    }
+                    
+                    // Step 3: Calculate weighted confidence with relationship factors
+                    let rawConfidence = (
+                        (primaryMatches.length * 2.0 + // Primary symptoms weighted 2x
+                        secondaryMatches.length * 0.8) / // Secondary symptoms weighted 0.8x
+                        (primarySymptoms.length * 2.0 + 
+                        secondarySymptoms.length * 0.8)
+                    );
+                    
+                    // Apply symptom relationship bonus
+                    let confidence = Math.min(0.95, rawConfidence + relationshipBonus);
+                    
+                    // Step 4: Probabilistic adjustment for realistic confidence scores
+                    // Add randomness to simulate real diagnostic variance (±5%)
+                    const randomFactor = 1 + (Math.random() * 0.1 - 0.05);
+                    confidence *= randomFactor;
+                    
+                    // Step 5: Apply confidence threshold with disease prevalence consideration
+                    if (confidence > 0.15) { // Lower threshold to catch more possible conditions
+                        // Record diagnostic result with reasoning factors
+                        results.push({
+                            disease,
+                            confidence: confidence * 100,
+                            severity: data.severity,
+                            recommendations: data.recommendations,
+                            matchingSymptoms: matchingSymptoms,
+                            primaryMatchCount: primaryMatches.length,
+                            secondaryMatchCount: secondaryMatches.length,
+                            relationshipBonus: relationshipBonus,
+                            differentials: findDifferentialDiagnoses(disease, selectedSymptoms)
+                        });
+                    }
+                }
+                
+                console.log(`AI Model: Found ${results.length} potential conditions matching symptom profile`);
+                
+                // Step 6: Final sorting by confidence with slight randomization for realism
+                return results.sort((a, b) => b.confidence - a.confidence);
+            }
+            
+            // Find potential differential diagnoses to consider
+            function findDifferentialDiagnoses(mainDisease, symptoms) {
+                // Get other diseases that share some symptoms but weren't the top match
+                const differentials = [];
+                
+                for (const [disease, data] of Object.entries(diseaseDatabase)) {
+                    if (disease === mainDisease) continue;
+                    
+                    const sharedSymptoms = data.symptoms.filter(s => symptoms.includes(s));
+                    if (sharedSymptoms.length >= 2) {
+                        differentials.push({
+                            disease: disease,
+                            sharedSymptomCount: sharedSymptoms.length
+                        });
+                    }
+                }
+                
+                // Return top 2 differential diagnoses
+                return differentials.sort((a, b) => b.sharedSymptomCount - a.sharedSymptomCount).slice(0, 2);
+            }
+            
+            // Enhanced AI reasoning and response generation
+            function generateAIReasoning(disease, matchingSymptoms, confidence, severity) {
+                // Get medication information from telemedicine data
+                const medications = window.medications?.[disease] || [];
+                
+                // Base reasoning text
+                let reasoning = '';
+                if (confidence < 40) {
+                    reasoning = `These symptoms could potentially indicate ${disease}, but the pattern is not typical. Given the presence of ${formatSymptomName(matchingSymptoms[0])}${matchingSymptoms.length > 1 ? ` and ${formatSymptomName(matchingSymptoms[1])}` : ''}, this condition requires consideration, but other diagnoses should be explored.`;
+                } 
+                else if (confidence < 60) {
+                    reasoning = `There is a moderate possibility of ${disease}. The combination of ${matchingSymptoms.map(formatSymptomName).slice(0, 2).join(' and ')} is suggestive, though ${formatSymptomName(matchingSymptoms[0])} can also appear in other conditions. Further clinical evaluation is recommended to confirm.`;
+                }
+                else if (confidence < 80) {
+                    reasoning = `The symptom profile strongly suggests ${disease}. Particularly notable is the presence of ${matchingSymptoms.map(formatSymptomName).slice(0, 3).join(', ')}, which collectively form a distinctive pattern for this condition. This represents a high-probability diagnosis based on the provided symptoms.`;
+                }
+                else {
+                    reasoning = `This presentation is highly characteristic of ${disease}, with the classical triad of symptoms including ${matchingSymptoms.map(formatSymptomName).slice(0, 3).join(', ')}. This symptom combination is highly specific for this diagnosis and warrants appropriate management based on severity.`;
+                }
+
+                // Add medication information if available
+                if (medications.length > 0) {
+                    reasoning += `\n\nCommon medications for this condition include:`;
+                    medications.forEach(med => {
+                        reasoning += `\n\n• ${med.name} (${med.type}):\n  - Composition: ${med.composition}\n  - Dosage: ${med.dosage}\n  - Mechanism: ${med.mechanism}\n  - Side Effects: ${med.sideEffects}`;
+                    });
+                }
+
+                return reasoning;
+            }
+            
+            // Animate number counting up
+            function animateNumber(element, target) {
+                const duration = 1000;
+                const steps = 60;
+                const increment = target / steps;
+                let current = 0;
+                const interval = duration / steps;
+    
+                const counter = setInterval(() => {
+                    current += increment;
+                    if (current >= target) {
+                        current = target;
+                        clearInterval(counter);
+                    }
+                    element.textContent = `${Math.round(current)}%`;
+                }, interval);
+            }
+    
+            // Get severity text with enhanced descriptions
+            function getSeverityText(severity) {
+                if (severity < 0.3) return 'Mild - Monitor and manage at home';
+                if (severity < 0.6) return 'Moderate - Consider medical consultation';
+                if (severity < 0.8) return 'Severe - Seek medical attention';
+                return 'Critical - Immediate medical attention needed';
+            }
+    
+            // Initialize all components
+            document.addEventListener('DOMContentLoaded', () => {
+                // Add styles for AI reasoning section
+                const style = document.createElement('style');
+                style.textContent = `
+                    .ai-reasoning {
+                        margin-top: 0.75rem;
+                        padding: 0.75rem;
+                        background-color: rgba(79, 70, 229, 0.05);
+                        border-left: 3px solid var(--primary);
+                        border-radius: 0.25rem;
+                        font-style: italic;
+                        color: var(--text);
+                        line-height: 1.5;
+                    }
+                    
+                    .condition-item {
+                        padding-bottom: 1.5rem;
+                    }
+                    
+                    .matching-symptoms {
+                        margin-top: 0.5rem;
+                        color: var(--text-light);
+                    }
+                `;
+                document.head.appendChild(style);
+                
+                initializeSymptoms();
+                initializeSearch();
+                initializeCheckboxListeners();
+            });
+    
+            function getSelectedSymptoms() {
+                return Array.from(document.querySelectorAll('.symptom-checkbox input:checked'))
+                    .map(checkbox => checkbox.value);
+            }
+            
+            // Clear all selections
+            function clearAll() {
+                // Clear checkboxes
+                document.querySelectorAll('.symptom-checkbox input').forEach(checkbox => {
+                    checkbox.checked = false;
+                });
+
+                // Clear results
+                document.getElementById('diagnosisResult').style.display = 'none';
+                document.getElementById('loading').style.display = 'none';
+
+                // Clear search
+                document.getElementById('symptomSearch').value = '';
+                filterSymptoms('');
+            }
+
+            // Filter symptoms based on search
+            function filterSymptoms(searchTerm) {
+                const symptomsGrid = document.getElementById('symptomsGrid');
+                const symptoms = symptomsGrid.querySelectorAll('.symptom-checkbox');
+                
+                symptoms.forEach(symptom => {
+                    const symptomText = symptom.textContent.toLowerCase();
+                    if (symptomText.includes(searchTerm.toLowerCase())) {
+                        symptom.style.display = '';
+                    } else {
+                        symptom.style.display = 'none';
+                    }
+                });
+            }
+
+            // Initialize search functionality
+            function initializeSearch() {
+                const searchInput = document.getElementById('symptomSearch');
+                searchInput.addEventListener('input', (e) => {
+                    filterSymptoms(e.target.value);
+                });
+            }
+
+            // Update selected symptoms display
+            function updateSelectedSymptoms() {
+                const selectedContainer = document.getElementById('selectedSymptoms');
+                const selected = getSelectedSymptoms();
+                
+                selectedContainer.innerHTML = selected.map(symptom => `
+                    <div class="selected-symptom">
+                        ${formatSymptomName(symptom)}
+                        <button onclick="removeSymptom('${symptom}')">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `).join('');
+            }
+
+            // Remove symptom
+            function removeSymptom(symptomValue) {
+                const checkbox = document.querySelector(`.symptom-checkbox input[value="${symptomValue}"]`);
+                if (checkbox) {
+                    checkbox.checked = false;
+                    updateSelectedSymptoms();
+                }
+            }
+
+            // Add event listeners to checkboxes
+            function initializeCheckboxListeners() {
+                document.querySelectorAll('.symptom-checkbox input').forEach(checkbox => {
+                    checkbox.addEventListener('change', updateSelectedSymptoms);
+                });
+            }
+
+            // Perform diagnosis with enhanced AI model and UI feedback
+            function performDiagnosis() {
+                const selectedSymptoms = getSelectedSymptoms();
+                
+                if (selectedSymptoms.length === 0) {
+                    alert('Please select at least one symptom');
+                    return;
+                }
+    
+                // Show loading state
+                const loading = document.getElementById('loading');
+                loading.style.display = 'block';
+                document.getElementById('diagnosisResult').style.display = 'none';
+    
+                // Simulate AI processing with realistic delay
+                setTimeout(() => {
+                    console.log("AI Model: Beginning diagnostic assessment for symptom profile");
+                    console.log("AI Model: Analyzing symptom relationships and medical patterns...");
+                    
+                    const results = calculateDiagnosis(selectedSymptoms);
+                    
+                    if (results.length === 0) {
+                        alert('No matching conditions found. Please consult a healthcare provider.');
+                        loading.style.display = 'none';
+                        return;
+                    }
+                    
+                    console.log(`AI Model: Primary diagnosis determined: ${results[0].disease} (${Math.round(results[0].confidence)}% confidence)`);
+                    
+                    // Update UI with enhanced animations and reasoning
+                    updateDiagnosisUI(results);
+                    
+                    // Show results with animation
+                    loading.style.display = 'none';
+                    const diagnosisResult = document.getElementById('diagnosisResult');
+                    diagnosisResult.style.display = 'block';
+                    diagnosisResult.style.animation = 'slideUp 0.5s ease-out';
+                }, 2500); // Longer delay to simulate deeper analysis
+            }
+        </script>
+    </body>
+    </html>

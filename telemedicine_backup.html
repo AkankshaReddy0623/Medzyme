@@ -1,0 +1,1418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medzyme - Telemedicine Consultation</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4F46E5;
+            --primary-dark: #4338CA;
+            --primary-light: #818CF8;
+            --secondary: #818CF8;
+            --success: #34D399;
+            --warning: #FBBF24;
+            --danger: #EF4444;
+            --background: #F3F4F6;
+            --card: #FFFFFF;
+            --text: #1F2937;
+            --text-light: #6B7280;
+            --border: #E5E7EB;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--text);
+            min-height: 100vh;
+            padding-bottom: 70px;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            padding: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 1rem;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--success);
+            border-radius: 50%;
+        }
+
+        .container {
+            flex: 1;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem;
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 1.5rem;
+            width: 100%;
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0.75rem;
+            align-content: start;
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        .action-card {
+            background: var(--card);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .action-card:hover {
+            transform: translateX(5px);
+            border-color: var(--primary-light);
+            background: linear-gradient(to right, var(--card), var(--background));
+        }
+
+        .action-card i {
+            font-size: 1.25rem;
+            color: var(--primary);
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--background);
+            border-radius: 0.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .chat-section {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            height: calc(100vh - 140px);
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background: var(--card);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .doctor-info {
+            flex: 1;
+        }
+
+        .doctor-info h2 {
+            font-size: 1.1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .doctor-info p {
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        .chat-container {
+            background: var(--card);
+            border-radius: 0.75rem;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-window {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+            scroll-behavior: smooth;
+        }
+
+        .message {
+            margin: 0.75rem 0;
+            display: flex;
+            gap: 1rem;
+            opacity: 0;
+            animation: fadeIn 0.3s forwards;
+            align-items: flex-start;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.user {
+            flex-direction: row-reverse;
+        }
+
+        .message.user .message-wrapper {
+            align-items: flex-end;
+        }
+
+        .message.user .message-content {
+            background: var(--primary);
+            color: white;
+        }
+
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            color: white;
+            flex-shrink: 0;
+            background: var(--primary-light);
+        }
+
+        .avatar.user {
+            background: var(--primary);
+        }
+
+        .message-wrapper {
+            display: flex;
+            flex-direction: column;
+            max-width: 70%;
+            gap: 0.25rem;
+        }
+
+        .message-sender {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 0.25rem;
+        }
+
+        .message-content {
+            background: var(--background);
+            padding: 1rem;
+            border-radius: 0.75rem;
+            position: relative;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        .message-timestamp {
+            font-size: 0.8rem;
+            color: var(--text-light);
+            margin-top: 0.5rem;
+        }
+
+        .message.user .message-timestamp {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .input-area {
+            background: var(--card);
+            border-top: 1px solid var(--border);
+            padding: 1rem;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 0.75rem;
+            align-items: flex-end;
+            background: var(--background);
+            border-radius: 0.75rem;
+            padding: 0.75rem;
+        }
+
+        .input-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .action-button {
+            background: none;
+            border: none;
+            color: var(--text-light);
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .action-button:hover {
+            background: var(--border);
+            color: var(--primary);
+        }
+
+        textarea {
+            flex: 1;
+            border: none;
+            background: transparent;
+            resize: none;
+            padding: 0.5rem;
+            font-size: 0.975rem;
+            min-height: 40px;
+            max-height: 120px;
+            color: var(--text);
+            line-height: 1.5;
+            outline: none;
+        }
+
+        .send-button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+        }
+
+        .send-button:hover {
+            background: var(--primary-dark);
+        }
+
+        .send-button:disabled {
+            background: var(--text-light);
+            cursor: not-allowed;
+        }
+
+        /* Navigation Bar Styles */
+        .nav-bar {
+            background: var(--card);
+            box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
+            padding: 1rem;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .nav-bar a {
+            color: var(--text);
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 0.875rem;
+            transition: color 0.2s;
+        }
+
+        .nav-bar a:hover {
+            color: var(--primary);
+        }
+
+        .nav-bar a i {
+            font-size: 1.5rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .nav-bar a.active {
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .nav-bar a.active i {
+            color: var(--primary);
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            
+            .quick-actions {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 0.75rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 0.5rem;
+            }
+            
+            .quick-actions {
+                display: none;
+            }
+            
+            .chat-section {
+                gap: 0.5rem;
+            }
+            
+            .message-wrapper {
+                max-width: 85%;
+            }
+
+            .header h1 {
+                font-size: 1.25rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <h1>Medzyme Chat</h1>
+            <div class="status-indicator">
+                <div class="status-dot"></div>
+                <span>Online</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <aside class="quick-actions">
+            <div class="action-card">
+                <i class="fas fa-video"></i>
+                <h4>Video Consultation</h4>
+            </div>
+            <div class="action-card">
+                <i class="fas fa-prescription"></i>
+                <h4>Prescriptions</h4>
+            </div>
+            <div class="action-card">
+                <i class="fas fa-file-medical"></i>
+                <h4>Medical Records</h4>
+            </div>
+            <div class="action-card">
+                <i class="fas fa-calendar-check"></i>
+                <h4>Appointments</h4>
+            </div>
+        </aside>
+
+        <main class="chat-section">
+            <div class="chat-header">
+                <div class="avatar ai">
+                    <i class="fas fa-user-md"></i>
+                </div>
+                <div class="doctor-info">
+                    <h2>Dr. AI Assistant</h2>
+                    <p>General Medicine • Online</p>
+                </div>
+            </div>
+
+            <div class="chat-container">
+                <div class="chat-window" id="chatWindow">
+                    <!-- Initial greeting message -->
+                    <div class="message ai">
+                        <div class="avatar ai">
+                            <i class="fas fa-user-md"></i>
+                        </div>
+                        <div class="message-wrapper">
+                            <div class="message-sender">Dr. AI</div>
+                            <div class="message-content">
+                                Hello! I'm Dr. AI, your virtual medical assistant. I'm here to help you with your health concerns and provide medical guidance.
+                                <br><br>
+                                I can assist you with:
+                                <br><br>
+                                1. Symptom Assessment
+                                <br>• Describe your symptoms
+                                <br>• Get preliminary assessment
+                                <br>• Receive medication information
+                                <br><br>
+                                2. Medication Information
+                                <br>• Drug compositions
+                                <br>• Dosage guidelines
+                                <br>• Side effects
+                                <br>• Mechanism of action
+                                <br><br>
+                                3. General Health Guidance
+                                <br>• Lifestyle recommendations
+                                <br>• Preventive care
+                                <br>• Follow-up care planning
+                                <br><br>
+                                Feel free to ask me anything about your health concerns, medications, or general medical advice. I'm here to help!
+                                <div class="message-timestamp">00:00</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="input-area">
+                    <div class="input-group">
+                        <div class="input-actions">
+                            <button class="action-button" aria-label="Attach file">
+                                <i class="fas fa-paperclip"></i>
+                            </button>
+                        </div>
+                        <textarea 
+                            placeholder="Type your message..." 
+                            id="messageInput"
+                            aria-label="Message input"
+                            rows="1"
+                        ></textarea>
+                        <button 
+                            class="send-button" 
+                            id="sendButton"
+                            onclick="sendMessage()"
+                            aria-label="Send message"
+                            disabled
+                        >
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <nav class="nav-bar">
+        <a href="home.html"><i class="fas fa-home"></i>Home</a>
+        <a href="diagnosis.html"><i class="fas fa-stethoscope"></i>Diagnosis</a>
+        <a href="telemedicine.html" class="active"><i class="fas fa-video"></i>Consult</a>
+        <a href="medicine_tracker.html"><i class="fas fa-pills"></i>Medicine</a>
+        <a href="profile.html"><i class="fas fa-user"></i>Profile</a>
+    </nav>
+
+    <script>
+        // Medical knowledge base with symptoms, conditions, and clinical reasoning
+        const medicalKnowledgeBase = {
+            // Symptom clusters with related conditions
+            symptoms: {
+                head: {
+                    'headache': ['Migraine', 'Tension Headache', 'Sinusitis', 'Hypertension', 'Dehydration'],
+                    'dizziness': ['Vertigo', 'Hypotension', 'Dehydration', 'Anemia', 'Anxiety'],
+                    'blurred vision': ['Migraine', 'Hypertension', 'Diabetes', 'Eye Strain', 'Glaucoma'],
+                    'eye pain': ['Glaucoma', 'Conjunctivitis', 'Sinusitis', 'Migraine', 'Eye Strain']
+                },
+                respiratory: {
+                    'cough': ['Common Cold', 'Bronchitis', 'COVID-19', 'Asthma', 'Pneumonia', 'Allergies'],
+                    'shortness of breath': ['Asthma', 'COVID-19', 'Pneumonia', 'Heart Failure', 'Anxiety', 'COPD'],
+                    'sore throat': ['Strep Throat', 'Common Cold', 'Tonsillitis', 'Allergies', 'Laryngitis'],
+                    'congestion': ['Common Cold', 'Sinusitis', 'Allergies', 'Flu']
+                },
+                cardiovascular: {
+                    'chest pain': ['Angina', 'Heart Attack', 'GERD', 'Muscle Strain', 'Anxiety', 'Pneumonia'],
+                    'palpitations': ['Anxiety', 'Arrhythmia', 'Hyperthyroidism', 'Caffeine', 'Anemia'],
+                    'elevated blood pressure': ['Hypertension', 'Anxiety', 'Pain', 'Medications', 'Kidney Disease']
+                },
+                gastrointestinal: {
+                    'abdominal pain': ['Gastritis', 'IBS', 'Appendicitis', 'GERD', 'Gallstones', 'Food Poisoning'],
+                    'nausea': ['Gastroenteritis', 'Food Poisoning', 'Migraine', 'Vertigo', 'Pregnancy', 'Anxiety'],
+                    'diarrhea': ['Gastroenteritis', 'Food Poisoning', 'IBS', 'IBD', 'Lactose Intolerance'],
+                    'constipation': ['IBS', 'Dehydration', 'Medication Side Effect', 'Hypothyroidism', 'Colorectal Issues']
+                },
+                musculoskeletal: {
+                    'joint pain': ['Arthritis', 'Injury', 'Fibromyalgia', 'Gout', 'Lupus', 'Lyme Disease'],
+                    'back pain': ['Muscle Strain', 'Herniated Disc', 'Sciatica', 'Spinal Stenosis', 'Kidney Infection'],
+                    'muscle weakness': ['Electrolyte Imbalance', 'Myopathy', 'Multiple Sclerosis', 'Chronic Fatigue']
+                },
+                skin: {
+                    'rash': ['Allergic Reaction', 'Eczema', 'Psoriasis', 'Contact Dermatitis', 'Fungal Infection'],
+                    'itching': ['Allergic Reaction', 'Eczema', 'Psoriasis', 'Dry Skin', 'Parasites']
+                },
+                neurological: {
+                    'headache': ['Migraine', 'Tension Headache', 'Cluster Headache', 'Sinusitis', 'Hypertension'],
+                    'numbness': ['Peripheral Neuropathy', 'Stroke', 'Multiple Sclerosis', 'Vitamin Deficiency', 'Anxiety'],
+                    'seizure': ['Epilepsy', 'Brain Injury', 'Electrolyte Imbalance', 'Infection', 'Substance Withdrawal']
+                },
+                general: {
+                    'fever': ['Infection', 'Inflammation', 'COVID-19', 'Flu', 'Common Cold', 'Pneumonia'],
+                    'fatigue': ['Anemia', 'Depression', 'Sleep Apnea', 'Hypothyroidism', 'Chronic Fatigue Syndrome', 'Infection'],
+                    'weight loss': ['Diabetes', 'Hyperthyroidism', 'Depression', 'Cancer', 'IBD', 'Infection'],
+                    'night sweats': ['Infection', 'Menopause', 'Lymphoma', 'Tuberculosis', 'Medication Side Effect']
+                }
+            },
+            
+            // Detailed condition information for clinical reasoning
+            conditions: {
+                'Migraine': {
+                    description: 'A neurological condition characterized by recurrent, throbbing headaches often accompanied by nausea, vomiting, and sensitivity to light and sound.',
+                    keySymptoms: ['pulsating headache', 'photophobia', 'phonophobia', 'nausea', 'visual aura'],
+                    acuity: 'moderate',
+                    followUp: 'Please track your triggers and consider preventive medications if migraines are frequent.'
+                },
+                'Hypertension': {
+                    description: 'Persistently elevated blood pressure that can lead to heart disease, stroke, and other complications if left untreated.',
+                    keySymptoms: ['elevated blood pressure', 'headache', 'dizziness', 'blurred vision'],
+                    acuity: 'chronic',
+                    followUp: 'Regular monitoring of blood pressure and adherence to medication is critical.'
+                },
+                'Common Cold': {
+                    description: 'A viral infection of the upper respiratory tract that typically resolves on its own within 7-10 days.',
+                    keySymptoms: ['runny nose', 'congestion', 'sore throat', 'cough', 'mild fever'],
+                    acuity: 'mild',
+                    followUp: 'Rest, hydration, and over-the-counter medications can help manage symptoms.'
+                },
+                'COVID-19': {
+                    description: 'A highly contagious respiratory illness caused by the SARS-CoV-2 virus with varying severity.',
+                    keySymptoms: ['fever', 'dry cough', 'fatigue', 'shortness of breath', 'loss of taste/smell'],
+                    acuity: 'moderate to severe',
+                    followUp: 'Testing is essential. Isolate and seek medical care if symptoms worsen, especially breathing difficulties.'
+                },
+                'Anxiety': {
+                    description: 'A mental health condition characterized by persistent worry, fear, and physical symptoms that can impact daily functioning.',
+                    keySymptoms: ['excessive worry', 'restlessness', 'rapid heartbeat', 'difficulty breathing', 'chest tightness'],
+                    acuity: 'varies',
+                    followUp: 'Therapy, stress management techniques, and sometimes medication can effectively manage anxiety.'
+                },
+                'IBS': {
+                    description: 'Irritable Bowel Syndrome affects the large intestine with chronic symptoms that can be managed but not cured.',
+                    keySymptoms: ['abdominal pain', 'bloating', 'diarrhea', 'constipation', 'gas'],
+                    acuity: 'chronic',
+                    followUp: 'Dietary modifications, stress management, and medications can help control symptoms.'
+                }
+                // Additional conditions would be defined here
+            },
+            
+            // Clinical questioning patterns for different symptom types
+            clinicalQuestions: {
+                headache: [
+                    'On a scale of 1-10, how severe is your headache?',
+                    'Where exactly is the pain located?',
+                    'Is the pain constant or does it come and go?',
+                    'Do you have any associated symptoms like nausea, vomiting, or sensitivity to light?',
+                    'Have you identified any triggers for your headaches?'
+                ],
+                chest: [
+                    'On a scale of 1-10, how severe is your chest pain?',
+                    'Is the pain sharp, dull, crushing, or burning?',
+                    'Does the pain radiate to your jaw, arm, or back?',
+                    'Does the pain change with breathing, movement, or position?',
+                    'Are you experiencing shortness of breath, sweating, or nausea with the pain?'
+                ],
+                digestive: [
+                    'Where in your abdomen is the pain located?',
+                    'Is the pain constant or intermittent?',
+                    'Have you noticed any changes in your bowel movements?',
+                    'Have you experienced nausea, vomiting, or loss of appetite?',
+                    'Does eating make the symptoms better or worse?'
+                ],
+                respiratory: [
+                    'When did your cough first start?',
+                    'Is your cough productive with phlegm or dry?',
+                    'Are you experiencing any fever or chest pain?',
+                    'Do you have any shortness of breath or wheezing?',
+                    'Have you been exposed to anyone with similar symptoms?'
+                ],
+                skin: [
+                    'When did you first notice the rash or skin issue?',
+                    'Is it itchy, painful, or burning?',
+                    'Have you used any new products, medications, or been exposed to new environments?',
+                    'Is the rash spreading or staying in one area?',
+                    'Have you tried any treatments so far?'
+                ],
+                general: [
+                    'When did you first notice these symptoms?',
+                    'Have you experienced these symptoms before?',
+                    'Are the symptoms constant or do they come and go?',
+                    'What makes your symptoms better or worse?',
+                    'Have you had any recent changes to medications or diet?'
+                ]
+            },
+            
+            // Pharmacology dataset with medication information
+            medications: {
+                'Migraine': [
+                    {
+                        name: 'Sumatriptan',
+                        type: 'Triptan',
+                        composition: 'Sumatriptan succinate (active ingredient), microcrystalline cellulose, lactose, croscarmellose sodium, magnesium stearate',
+                        dosage: '25-100mg orally at onset of migraine',
+                        mechanism: 'Selective 5-hydroxytryptamine receptor agonist that causes vasoconstriction of cranial blood vessels',
+                        sideEffects: 'Tingling, warm sensations, dizziness, fatigue, chest/neck tightness'
+                    },
+                    {
+                        name: 'Ibuprofen',
+                        type: 'NSAID',
+                        composition: 'Ibuprofen (active ingredient), microcrystalline cellulose, corn starch, sodium starch glycolate, colloidal silicon dioxide, magnesium stearate',
+                        dosage: '400-800mg orally every 6-8 hours as needed',
+                        mechanism: 'Non-selective inhibitor of cyclooxygenase (COX), reducing prostaglandin synthesis',
+                        sideEffects: 'Stomach pain, heartburn, nausea, headache, dizziness'
+                    }
+                ],
+                'Tension Headache': [
+                    {
+                        name: 'Acetaminophen',
+                        type: 'Analgesic',
+                        composition: 'Acetaminophen (active ingredient), corn starch, sodium starch glycolate, talc, magnesium stearate, hypromellose',
+                        dosage: '650-1000mg orally every 4-6 hours as needed',
+                        mechanism: 'Centrally acting analgesic that inhibits prostaglandin synthesis',
+                        sideEffects: 'Rarely causes side effects at recommended doses; liver damage with overdose'
+                    },
+                    {
+                        name: 'Naproxen Sodium',
+                        type: 'NSAID',
+                        composition: 'Naproxen sodium (active ingredient), microcrystalline cellulose, povidone, talc, magnesium stearate, blue colorant',
+                        dosage: '550mg orally initially, followed by 275mg every 6-8 hours',
+                        mechanism: 'Blocks the enzyme that makes prostaglandins (cyclooxygenase), decreasing inflammation and pain',
+                        sideEffects: 'Stomach pain, heartburn, drowsiness, dizziness'
+                    }
+                ],
+                'Common Cold': [
+                    {
+                        name: 'Dextromethorphan',
+                        type: 'Cough Suppressant',
+                        composition: 'Dextromethorphan hydrobromide (active ingredient), citric acid, sodium citrate, saccharin sodium, sucrose, flavoring',
+                        dosage: '10-30mg orally every 4-8 hours as needed',
+                        mechanism: 'Acts on the cough center in the medulla to suppress cough reflex',
+                        sideEffects: 'Drowsiness, dizziness, mild nausea'
+                    },
+                    {
+                        name: 'Pseudoephedrine',
+                        type: 'Decongestant',
+                        composition: 'Pseudoephedrine hydrochloride (active ingredient), lactose, corn starch, magnesium stearate',
+                        dosage: '60mg orally every 4-6 hours',
+                        mechanism: 'Stimulates alpha-adrenergic receptors to reduce nasal congestion',
+                        sideEffects: 'Nervousness, insomnia, decreased appetite, dry mouth'
+                    }
+                ],
+                'Influenza': [
+                    {
+                        name: 'Oseltamivir',
+                        type: 'Antiviral',
+                        composition: 'Oseltamivir phosphate (active ingredient), pregelatinized starch, talc, povidone K30, croscarmellose sodium, sodium stearyl fumarate',
+                        dosage: '75mg orally twice daily for 5 days',
+                        mechanism: 'Neuraminidase inhibitor that prevents release of new viral particles from infected cells',
+                        sideEffects: 'Nausea, vomiting, headache, dizziness'
+                    },
+                    {
+                        name: 'Acetaminophen with Dextromethorphan',
+                        type: 'Analgesic/Cough Suppressant',
+                        composition: 'Acetaminophen, dextromethorphan hydrobromide (active ingredients), corn starch, povidone, stearic acid, sodium starch glycolate',
+                        dosage: '650mg acetaminophen / 30mg dextromethorphan every 6 hours',
+                        mechanism: 'Reduces fever and pain while suppressing cough',
+                        sideEffects: 'Drowsiness, mild nausea, dizziness'
+                    }
+                ],
+                'COVID-19': [
+                    {
+                        name: 'Paxlovid',
+                        type: 'Antiviral Combination',
+                        composition: 'Nirmatrelvir and ritonavir (active ingredients), microcrystalline cellulose, lactose monohydrate, croscarmellose sodium, colloidal silicon dioxide, sodium stearyl fumarate',
+                        dosage: '300mg nirmatrelvir with 100mg ritonavir twice daily for 5 days',
+                        mechanism: 'Inhibits viral protease to prevent replication of SARS-CoV-2',
+                        sideEffects: 'Altered taste, diarrhea, high blood pressure, muscle aches'
+                    },
+                    {
+                        name: 'Acetaminophen',
+                        type: 'Analgesic/Antipyretic',
+                        composition: 'Acetaminophen (active ingredient), corn starch, sodium starch glycolate, talc, magnesium stearate, hypromellose',
+                        dosage: '650-1000mg orally every 6 hours as needed for fever or discomfort',
+                        mechanism: 'Reduces fever and alleviates pain through central action',
+                        sideEffects: 'Minimal at recommended doses; liver toxicity with overdose'
+                    }
+                ],
+                'Hypertension': [
+                    {
+                        name: 'Lisinopril',
+                        type: 'ACE Inhibitor',
+                        composition: 'Lisinopril (active ingredient), calcium phosphate, mannitol, corn starch, magnesium stearate',
+                        dosage: '10-40mg orally once daily',
+                        mechanism: 'Inhibits angiotensin-converting enzyme, reducing angiotensin II formation and decreasing blood pressure',
+                        sideEffects: 'Dry cough, dizziness, headache, fatigue, hyperkalemia'
+                    },
+                    {
+                        name: 'Amlodipine',
+                        type: 'Calcium Channel Blocker',
+                        composition: 'Amlodipine besylate (active ingredient), microcrystalline cellulose, dibasic calcium phosphate, sodium starch glycolate, magnesium stearate',
+                        dosage: '5-10mg orally once daily',
+                        mechanism: 'Blocks calcium entry into vascular smooth muscle and cardiac cells, causing vasodilation',
+                        sideEffects: 'Peripheral edema, headache, flushing, dizziness'
+                    }
+                ],
+                'Gastritis': [
+                    {
+                        name: 'Omeprazole',
+                        type: 'Proton Pump Inhibitor',
+                        composition: 'Omeprazole (active ingredient), sugar spheres, hydroxypropyl methylcellulose, talc, titanium dioxide, methacrylic acid copolymer',
+                        dosage: '20-40mg orally once daily before a meal',
+                        mechanism: 'Inhibits the final step of gastric acid production by blocking H+/K+ ATPase enzyme',
+                        sideEffects: 'Headache, abdominal pain, nausea, diarrhea, vitamin B12 deficiency with long-term use'
+                    },
+                    {
+                        name: 'Sucralfate',
+                        type: 'Gastrointestinal Protectant',
+                        composition: 'Sucralfate (active ingredient), corn starch, microcrystalline cellulose, magnesium stearate, sodium lauryl sulfate',
+                        dosage: '1g orally four times daily on an empty stomach',
+                        mechanism: 'Forms a protective barrier over ulcers or irritated mucosa, protecting from acid, pepsin, and bile salts',
+                        sideEffects: 'Constipation, dry mouth, back pain, dizziness'
+                    }
+                ],
+                'Anxiety': [
+                    {
+                        name: 'Sertraline',
+                        type: 'SSRI Antidepressant',
+                        composition: 'Sertraline hydrochloride (active ingredient), microcrystalline cellulose, calcium phosphate, hydroxypropyl cellulose, magnesium stearate, titanium dioxide',
+                        dosage: '25-50mg orally once daily, may increase gradually to maximum 200mg daily',
+                        mechanism: 'Selectively inhibits serotonin reuptake in the CNS, increasing serotonin availability',
+                        sideEffects: 'Nausea, diarrhea, insomnia, sexual dysfunction, increased sweating'
+                    },
+                    {
+                        name: 'Lorazepam',
+                        type: 'Benzodiazepine',
+                        composition: 'Lorazepam (active ingredient), lactose monohydrate, microcrystalline cellulose, polacrilin potassium, magnesium stearate',
+                        dosage: '0.5-2mg orally 2-3 times daily as needed',
+                        mechanism: 'Enhances effect of GABA neurotransmitter, producing anxiolytic, sedative effects',
+                        sideEffects: 'Drowsiness, dizziness, weakness, unsteadiness, potential for dependence'
+                    }
+                ],
+                'Asthma': [
+                    {
+                        name: 'Albuterol',
+                        type: 'Beta-2 Adrenergic Agonist',
+                        composition: 'Albuterol sulfate (active ingredient), propellant HFA-134a, ethanol, oleic acid',
+                        dosage: '1-2 inhalations every 4-6 hours as needed',
+                        mechanism: 'Stimulates beta-2 receptors in bronchial smooth muscle, causing bronchodilation',
+                        sideEffects: 'Tremor, nervousness, headache, rapid heart rate, throat irritation'
+                    },
+                    {
+                        name: 'Fluticasone',
+                        type: 'Inhaled Corticosteroid',
+                        composition: 'Fluticasone propionate (active ingredient), propellant HFA-134a, ethanol, lecithin',
+                        dosage: '88-440mcg twice daily via inhalation',
+                        mechanism: 'Reduces inflammation in the airways by inhibiting multiple inflammatory cells and mediators',
+                        sideEffects: 'Throat irritation, hoarseness, oral candidiasis, cough after inhalation'
+                    }
+                ],
+                'IBS': [
+                    {
+                        name: 'Dicyclomine',
+                        type: 'Antispasmodic',
+                        composition: 'Dicyclomine hydrochloride (active ingredient), lactose, corn starch, calcium phosphate, magnesium stearate',
+                        dosage: '20-40mg orally four times daily',
+                        mechanism: 'Anticholinergic that relaxes smooth muscles in the intestines',
+                        sideEffects: 'Dry mouth, blurred vision, urinary retention, constipation'
+                    },
+                    {
+                        name: 'Psyllium Husk',
+                        type: 'Bulk-Forming Fiber Laxative',
+                        composition: 'Psyllium husk (active ingredient), dextrose, citric acid, sodium bicarbonate, natural and artificial flavors',
+                        dosage: '1 tablespoon in 8oz water 1-3 times daily',
+                        mechanism: 'Absorbs water in the intestines to form a bulky stool, regulating bowel movements',
+                        sideEffects: 'Bloating, gas, abdominal cramps, allergic reactions in sensitive individuals'
+                    }
+                ]
+            }
+        };
+
+        // Enhanced AI reasoning and response generation
+        class MedicalAssistantAI {
+            constructor(knowledgeBase) {
+                this.knowledgeBase = knowledgeBase;
+                this.conversationHistory = [];
+                this.currentAssessment = {
+                    reportedSymptoms: [],
+                    possibleConditions: [],
+                    questionStrategy: 'general',
+                    acuityLevel: 'unknown',
+                    confidenceLevel: 0,
+                    recommendedMedications: []
+                };
+                this.assessmentStage = 'initial'; // initial, gathering, analyzing, concluding
+            }
+            
+            // Process user message and generate response
+            processMessage(userMessage) {
+                // Add to conversation history
+                this.conversationHistory.push({
+                    role: 'user',
+                    content: userMessage
+                });
+                
+                // Check for drug composition query
+                if (this.isDrugCompositionQuery(userMessage)) {
+                    return this.handleDrugCompositionQuery(userMessage);
+                }
+                
+                // Start building AI "thinking" process
+                console.log('AI Thinking: Analyzing user message...');
+                
+                // Extract symptoms from message
+                const extractedSymptoms = this.extractSymptoms(userMessage);
+                console.log(`AI Thinking: Identified potential symptoms: ${extractedSymptoms.join(', ')}`);
+                
+                // Update assessment with new symptoms
+                this.updateAssessment(extractedSymptoms, userMessage);
+                
+                // Determine response strategy based on assessment stage
+                let response;
+                
+                switch(this.assessmentStage) {
+                    case 'initial':
+                        response = this.generateInitialResponse(userMessage);
+                        break;
+                    case 'gathering':
+                        response = this.generateFollowUpQuestions();
+                        break;
+                    case 'analyzing':
+                        response = this.generateAnalysisResponse();
+                        break;
+                    case 'concluding':
+                        response = this.generateConclusionResponse();
+                        break;
+                    default:
+                        response = this.generateInitialResponse(userMessage);
+                }
+                
+                // Add AI response to conversation history
+                this.conversationHistory.push({
+                    role: 'assistant',
+                    content: response
+                });
+                
+                return response;
+            }
+            
+            // Extract symptoms from user message
+            extractSymptoms(message) {
+                const lowerMessage = message.toLowerCase();
+                const extractedSymptoms = [];
+                
+                // Iterate through all symptom categories
+                Object.values(this.knowledgeBase.symptoms).forEach(category => {
+                    Object.keys(category).forEach(symptom => {
+                        if (lowerMessage.includes(symptom)) {
+                            extractedSymptoms.push(symptom);
+                        }
+                    });
+                });
+                
+                return extractedSymptoms;
+            }
+            
+            // Determine relevant body system based on symptoms
+            determineBodySystem(symptoms) {
+                const systemCounts = {};
+                
+                symptoms.forEach(symptom => {
+                    for (const [system, systemSymptoms] of Object.entries(this.knowledgeBase.symptoms)) {
+                        if (Object.keys(systemSymptoms).some(s => s === symptom)) {
+                            systemCounts[system] = (systemCounts[system] || 0) + 1;
+                        }
+                    }
+                });
+                
+                // Get system with most matches
+                let maxSystem = 'general';
+                let maxCount = 0;
+                
+                for (const [system, count] of Object.entries(systemCounts)) {
+                    if (count > maxCount) {
+                        maxCount = count;
+                        maxSystem = system;
+                    }
+                }
+                
+                console.log(`AI Thinking: Primary body system affected appears to be: ${maxSystem}`);
+                return maxSystem;
+            }
+            
+            // Update assessment with new information
+            updateAssessment(newSymptoms, fullMessage) {
+                // Add new symptoms to reported list (avoiding duplicates)
+                newSymptoms.forEach(symptom => {
+                    if (!this.currentAssessment.reportedSymptoms.includes(symptom)) {
+                        this.currentAssessment.reportedSymptoms.push(symptom);
+                    }
+                });
+                
+                // If we have symptoms, update the question strategy
+                if (this.currentAssessment.reportedSymptoms.length > 0) {
+                    const primarySystem = this.determineBodySystem(this.currentAssessment.reportedSymptoms);
+                    this.currentAssessment.questionStrategy = primarySystem;
+                    
+                    // Move to gathering stage if we're just starting
+                    if (this.assessmentStage === 'initial') {
+                        this.assessmentStage = 'gathering';
+                    }
+                    
+                    // Generate possible conditions based on reported symptoms
+                    this.generatePossibleConditions();
+                }
+                
+                // Check if we have enough information to move to analysis
+                if (this.currentAssessment.reportedSymptoms.length >= 3 || 
+                    this.conversationHistory.length >= 6) {
+                    this.assessmentStage = 'analyzing';
+                }
+                
+                // If acute symptoms are mentioned, update acuity
+                const acuteKeywords = ['severe', 'intense', 'worst', 'unbearable', 'emergency', 'collapsed', 'cannot breathe'];
+                if (acuteKeywords.some(word => fullMessage.toLowerCase().includes(word))) {
+                    this.currentAssessment.acuityLevel = 'high';
+                    this.assessmentStage = 'concluding'; // Skip to conclusion for acute issues
+                }
+                
+                console.log(`AI Thinking: Assessment updated. Current stage: ${this.assessmentStage}`);
+                console.log(`AI Thinking: Currently tracking ${this.currentAssessment.reportedSymptoms.length} symptoms`);
+            }
+            
+            // Generate list of possible conditions based on symptoms
+            generatePossibleConditions() {
+                const conditionScores = {};
+                
+                // Score each condition based on symptom matches
+                this.currentAssessment.reportedSymptoms.forEach(symptom => {
+                    // Find which category contains this symptom
+                    for (const [system, systemSymptoms] of Object.entries(this.knowledgeBase.symptoms)) {
+                        if (symptom in systemSymptoms) {
+                            // Get associated conditions for this symptom
+                            const associatedConditions = systemSymptoms[symptom];
+                            
+                            // Increase score for each associated condition
+                            associatedConditions.forEach((condition, index) => {
+                                // Higher score for conditions mentioned first (more relevant)
+                                const positionScore = 1 - (index * 0.15);
+                                conditionScores[condition] = (conditionScores[condition] || 0) + positionScore;
+                            });
+                        }
+                    }
+                });
+                
+                // Convert to sorted array of condition objects
+                const sortedConditions = Object.entries(conditionScores)
+                    .map(([condition, score]) => ({
+                        name: condition,
+                        score: score,
+                        confidence: Math.min(score / this.currentAssessment.reportedSymptoms.length, 0.95)
+                    }))
+                    .sort((a, b) => b.score - a.score);
+                
+                this.currentAssessment.possibleConditions = sortedConditions;
+                
+                if (sortedConditions.length > 0) {
+                    this.currentAssessment.confidenceLevel = sortedConditions[0].confidence;
+                    console.log(`AI Thinking: Top condition: ${sortedConditions[0].name} (${Math.round(sortedConditions[0].confidence * 100)}% confidence)`);
+                    
+                    // Find recommended medications for the top condition
+                    this.findRecommendedMedications(sortedConditions[0].name);
+                }
+            }
+            
+            // Find recommended medications for a condition
+            findRecommendedMedications(condition) {
+                const medications = this.knowledgeBase.medications[condition];
+                
+                if (medications && medications.length > 0) {
+                    this.currentAssessment.recommendedMedications = medications;
+                    console.log(`AI Thinking: Found ${medications.length} potential medications for ${condition}`);
+                } else {
+                    this.currentAssessment.recommendedMedications = [];
+                    console.log(`AI Thinking: No specific medications found for ${condition}`);
+                }
+            }
+            
+            // Generate initial response to user
+            generateInitialResponse(message) {
+                // Check for specific requests first
+                if (message.toLowerCase().includes('prescription')) {
+                    return "I can help with prescription information. To assist you properly, I'll need:\n\n1. The name of your medication\n2. The current dosage you're taking\n3. When you last refilled the prescription\n\nThis information will help me provide accurate guidance.";
+                }
+                
+                if (message.toLowerCase().includes('appointment')) {
+                    return "I'd be happy to help you schedule an appointment. To find the best time:\n\n1. What type of appointment are you looking for?\n2. Do you have a preferred doctor?\n3. What days and times work best for you?\n\nWe typically offer appointments Monday-Friday from 8 AM to 5 PM.";
+                }
+                
+                // For symptom-related queries
+                if (this.currentAssessment.reportedSymptoms.length > 0) {
+                    const symptomList = this.currentAssessment.reportedSymptoms
+                        .map(s => s.charAt(0).toUpperCase() + s.slice(1))
+                        .join(', ');
+                    
+                    return `I understand you're experiencing ${symptomList}. As your medical assistant, I'd like to gather more information to better assess your condition.\n\nCould you please tell me:\n\n1. When did these symptoms first begin?\n2. How severe are they on a scale of 1-10?\n3. Have you tried any treatments or medications so far?`;
+                }
+                
+                // Default response for unclear messages
+                return "Thank you for reaching out. I'm Dr. AI, your medical assistant. To help you effectively, I need to understand your concerns better. Could you please describe what symptoms or health issues you're experiencing? Or, if you need help with appointments, prescriptions, or medical records, please let me know.";
+            }
+            
+            // Generate targeted follow-up questions based on reported symptoms
+            generateFollowUpQuestions() {
+                const system = this.currentAssessment.questionStrategy;
+                
+                // Get appropriate questions for the body system
+                const questions = this.knowledgeBase.clinicalQuestions[system] || 
+                                  this.knowledgeBase.clinicalQuestions.general;
+                
+                // Select 2-3 most relevant questions
+                const selectedQuestions = questions.slice(0, 3);
+                
+                console.log(`AI Thinking: Asking follow-up questions focused on ${system} system`);
+                
+                return `To better understand your condition, I need a few more details:\n\n${selectedQuestions.map((q, i) => `${i+1}. ${q}`).join('\n\n')}\n\nThis information will help me provide more accurate guidance.`;
+            }
+            
+            // Generate response based on symptom analysis
+            generateAnalysisResponse() {
+                // If no conditions found or no symptoms reported
+                if (this.currentAssessment.possibleConditions.length === 0 || 
+                    this.currentAssessment.reportedSymptoms.length === 0) {
+                    this.assessmentStage = 'gathering';
+                    return "I don't have enough information yet to determine what might be causing your symptoms. Could you provide more details about what you're experiencing?";
+                }
+                
+                // Get top conditions
+                const topConditions = this.currentAssessment.possibleConditions.slice(0, 2);
+                const mainCondition = topConditions[0];
+                
+                // Get condition details
+                const conditionInfo = this.knowledgeBase.conditions[mainCondition.name] || {
+                    description: `a condition characterized by symptoms including ${this.currentAssessment.reportedSymptoms.join(', ')}`,
+                    acuity: 'unknown',
+                    followUp: 'it would be best to consult with a healthcare provider for proper evaluation.'
+                };
+                
+                // Get medication information for the condition
+                const medications = this.knowledgeBase.medications[mainCondition.name] || [];
+                
+                console.log(`AI Thinking: Providing analysis of possible ${mainCondition.name} diagnosis`);
+                
+                // Move to conclusion stage
+                this.assessmentStage = 'concluding';
+                
+                // Format response with clinical assessment and medication information
+                let response = `Based on the symptoms you've described (${this.currentAssessment.reportedSymptoms.join(', ')}), I think we should consider ${mainCondition.name} as a possibility.\n\n`;
+                response += `${mainCondition.name} is ${conditionInfo.description}\n\n`;
+                response += `It's important to note that this is not a definitive diagnosis, but rather a preliminary assessment based on the information provided. ${conditionInfo.followUp}\n\n`;
+                
+                // Add medication information if available
+                if (medications.length > 0) {
+                    response += "Medication Information:\n";
+                    response += "Based on your symptoms, here are the medications that might be prescribed by a doctor:\n\n";
+                    
+                    medications.forEach((med, index) => {
+                        response += `${index+1}. ${med.name} (${med.type}):\n`;
+                        response += `   • Composition: ${med.composition}\n`;
+                        response += `   • Typical Dosage: ${med.dosage}\n`;
+                        response += `   • How it works: ${med.mechanism}\n`;
+                        response += `   • Possible Side Effects: ${med.sideEffects}\n\n`;
+                    });
+                    
+                    response += "IMPORTANT: This medication information is for educational purposes only. Any medication should only be taken as prescribed by your doctor.\n\n";
+                }
+                
+                response += "Would you like to schedule a follow-up appointment to discuss this with a doctor?";
+                
+                return response;
+            }
+            
+            // Generate concluding response with recommendations
+            generateConclusionResponse() {
+                // Check if high acuity
+                if (this.currentAssessment.acuityLevel === 'high') {
+                    return "Based on what you've described, your symptoms require immediate medical attention. Please contact emergency services or go to your nearest emergency room right away. Some symptoms should not wait for a regular appointment, and it's better to be evaluated promptly.";
+                }
+                
+                // Get top condition
+                const topCondition = this.currentAssessment.possibleConditions[0];
+                
+                if (!topCondition) {
+                    return "Based on our conversation, I recommend speaking with a healthcare provider for a proper evaluation. Would you like me to help you schedule an appointment?";
+                }
+                
+                // Get condition details
+                const conditionInfo = this.knowledgeBase.conditions[topCondition.name] || {
+                    description: `a condition characterized by symptoms including ${this.currentAssessment.reportedSymptoms.join(', ')}`,
+                    acuity: 'unknown',
+                    followUp: 'it would be best to consult with a healthcare provider for proper evaluation.'
+                };
+                
+                // Generate confidence statement based on confidence level
+                let confidenceStatement = "";
+                if (topCondition.confidence > 0.8) {
+                    confidenceStatement = "Your symptoms are strongly consistent with";
+                } else if (topCondition.confidence > 0.5) {
+                    confidenceStatement = "Your symptoms could indicate";
+                } else {
+                    confidenceStatement = "Your symptoms might possibly be related to";
+                }
+                
+                // Get medication information for the condition
+                const medications = this.knowledgeBase.medications[topCondition.name] || [];
+                
+                // Format the response with clear sections
+                let response = `${confidenceStatement} ${topCondition.name}, which is ${conditionInfo.description}\n\n`;
+                
+                // Add recommendations section
+                response += "Recommendations:\n";
+                response += `1. ${conditionInfo.followUp}\n`;
+                response += "2. In the meantime, rest and stay hydrated.\n";
+                response += "3. Monitor your symptoms and seek urgent care if they worsen.\n\n`;
+                
+                // Always include medication information if available
+                if (medications.length > 0) {
+                    response += "Medication Information:\n";
+                    response += "Based on your symptoms, here are the medications that might be prescribed by a doctor:\n\n";
+                    
+                    medications.forEach((med, index) => {
+                        response += `${index+1}. ${med.name} (${med.type}):\n`;
+                        response += `   • Composition: ${med.composition}\n`;
+                        response += `   • Typical Dosage: ${med.dosage}\n`;
+                        response += `   • How it works: ${med.mechanism}\n`;
+                        response += `   • Possible Side Effects: ${med.sideEffects}\n\n`;
+                    });
+                    
+                    response += "IMPORTANT: This medication information is for educational purposes only. Any medication should only be taken as prescribed by your doctor.\n\n";
+                }
+                
+                // Add follow-up question
+                response += "Would you like to schedule a follow-up appointment to discuss this with a doctor?";
+                
+                return response;
+            }
+
+            // Check if the message is asking about drug composition
+            isDrugCompositionQuery(message) {
+                const lowerMessage = message.toLowerCase();
+                const drugKeywords = ['composition', 'ingredients', 'what is in', 'what contains', 'made of', 'components'];
+                return drugKeywords.some(keyword => lowerMessage.includes(keyword));
+            }
+
+            // Handle drug composition queries
+            handleDrugCompositionQuery(message) {
+                // Extract drug name from message
+                const drugName = this.extractDrugName(message);
+                
+                if (!drugName) {
+                    return "I couldn't identify the medication you're asking about. Could you please specify the name of the medication you'd like to know about?";
+                }
+                
+                // Search for the drug in our medication database
+                const drugInfo = this.findDrugInformation(drugName);
+                
+                if (!drugInfo) {
+                    return `I don't have specific information about ${drugName} in my database. Please consult your healthcare provider or pharmacist for detailed information about this medication.`;
+                }
+                
+                // Format the response with drug composition information
+                let response = `Here's the detailed composition information for ${drugInfo.name}:\n\n`;
+                response += `• Active Ingredient: ${drugInfo.composition.split(',')[0]}\n`;
+                response += `• Other Components: ${drugInfo.composition.split(',').slice(1).join(', ')}\n\n`;
+                response += `Type: ${drugInfo.type}\n`;
+                response += `Typical Dosage: ${drugInfo.dosage}\n`;
+                response += `Mechanism of Action: ${drugInfo.mechanism}\n`;
+                response += `Possible Side Effects: ${drugInfo.sideEffects}\n\n`;
+                response += "IMPORTANT: This information is for educational purposes only. Always follow your healthcare provider's instructions regarding medication use.";
+                
+                return response;
+            }
+
+            // Extract drug name from message
+            extractDrugName(message) {
+                // Look for drug names in our medication database
+                for (const condition in this.knowledgeBase.medications) {
+                    for (const med of this.knowledgeBase.medications[condition]) {
+                        if (message.toLowerCase().includes(med.name.toLowerCase())) {
+                            return med.name;
+                        }
+                    }
+                }
+                return null;
+            }
+
+            // Find drug information in our database
+            findDrugInformation(drugName) {
+                for (const condition in this.knowledgeBase.medications) {
+                    for (const med of this.knowledgeBase.medications[condition]) {
+                        if (med.name.toLowerCase() === drugName.toLowerCase()) {
+                            return med;
+                        }
+                    }
+                }
+                return null;
+            }
+        }
+
+        // Initialize medical assistant AI
+        const medicalAI = new MedicalAssistantAI(medicalKnowledgeBase);
+
+        // Enhanced response function using the AI model
+        function getAIResponse(message) {
+            try {
+                return medicalAI.processMessage(message);
+            } catch (error) {
+                console.error('Error processing message:', error);
+                return "I apologize, but I'm having trouble processing your message. Could you please try again?";
+            }
+        }
+
+        function insertQuickResponse(text) {
+            const input = document.getElementById('messageInput');
+            input.value = text;
+            input.focus();
+            autoResizeTextarea(input);
+            updateSendButton();
+        }
+
+        function autoResizeTextarea(textarea) {
+            textarea.style.height = 'auto';
+            const maxHeight = 120;
+            const scrollHeight = textarea.scrollHeight;
+            textarea.style.height = Math.min(scrollHeight, maxHeight) + 'px';
+            textarea.style.overflowY = scrollHeight > maxHeight ? 'auto' : 'hidden';
+        }
+
+        function formatTime() {
+            return new Date().toLocaleTimeString([], { 
+                hour: '2-digit', 
+                minute: '2-digit'
+            });
+        }
+
+        function scrollToBottom() {
+            const chatWindow = document.getElementById('chatWindow');
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+
+        function addMessage(content, isUser = false) {
+            const chatWindow = document.getElementById('chatWindow');
+            const currentTime = formatTime();
+            
+            const messageHTML = `
+                <div class="message ${isUser ? 'user' : 'ai'}">
+                    <div class="avatar ${isUser ? 'user' : 'ai'}">
+                        <i class="fas fa-${isUser ? 'user' : 'user-md'}"></i>
+                    </div>
+                    <div class="message-wrapper">
+                        <div class="message-sender">${isUser ? 'You' : 'Dr. AI'}</div>
+                        <div class="message-content">
+                            ${content.replace(/\n/g, '<br>')}
+                            <div class="message-timestamp">${currentTime}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            chatWindow.insertAdjacentHTML('beforeend', messageHTML);
+            scrollToBottom();
+        }
+
+        function addTypingIndicator() {
+            const chatWindow = document.getElementById('chatWindow');
+            const typingIndicator = `
+                <div class="message ai" id="typingIndicator">
+                    <div class="avatar ai">
+                        <i class="fas fa-user-md"></i>
+                    </div>
+                    <div class="message-wrapper">
+                        <div class="message-sender">Dr. AI</div>
+                        <div class="typing-indicator">
+                            <div class="typing-dot"></div>
+                            <div class="typing-dot"></div>
+                            <div class="typing-dot"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            chatWindow.insertAdjacentHTML('beforeend', typingIndicator);
+            scrollToBottom();
+        }
+
+        function removeTypingIndicator() {
+            const indicator = document.getElementById('typingIndicator');
+            if (indicator) indicator.remove();
+        }
+
+        function updateSendButton() {
+            const input = document.getElementById('messageInput');
+            const sendButton = document.getElementById('sendButton');
+            sendButton.disabled = !input.value.trim();
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (message) {
+                // Add user message
+                addMessage(message, true);
+                
+                // Clear input and reset height
+                input.value = '';
+                autoResizeTextarea(input);
+                updateSendButton();
+                
+                // Show typing indicator
+                addTypingIndicator();
+                
+                // Simulate AI response after delay
+                setTimeout(() => {
+                    removeTypingIndicator();
+                    const aiResponse = getAIResponse(message);
+                    addMessage(aiResponse, false);
+                }, Math.random() * 1000 + 1000); // Random delay between 1-2 seconds
+            }
+        }
+
+        // Event Listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            const textarea = document.getElementById('messageInput');
+            const sendButton = document.getElementById('sendButton');
+            
+            // Auto-resize textarea
+            textarea.addEventListener('input', () => {
+                autoResizeTextarea(textarea);
+                updateSendButton();
+            });
+
+            // Handle enter key
+            textarea.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+
+            // Handle send button click
+            sendButton.addEventListener('click', sendMessage);
+
+            // Quick action cards
+            document.querySelectorAll('.action-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    const action = card.querySelector('h4').textContent;
+                    insertQuickResponse(`I'd like to ${action.toLowerCase()}`);
+                });
+            });
+
+            // Initial send button state
+            updateSendButton();
+        });
+    </script>
+</body>
+</html>
